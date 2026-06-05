@@ -191,6 +191,30 @@
   .picks-locked-overlay { text-align: center; padding: 60px 20px; }
   .picks-locked-overlay h2 { font-size: 1.5rem; font-weight: 800; color: var(--accent2); margin-bottom: 10px; }
   .picks-locked-overlay p { color: var(--muted); font-size: 0.95rem; }
+
+  /* AUTH SCREEN */
+  .auth-wrap { max-width: 420px; margin: 48px auto; padding: 0 16px 60px; }
+  .auth-tabs { display: flex; background: var(--card2); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
+  .auth-tab { flex: 1; padding: 9px; border: none; background: transparent; color: var(--muted); font-size: 0.88rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .auth-tab.active { background: var(--bg); color: var(--accent2); }
+  .auth-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+  .auth-card h2 { font-size: 1.1rem; font-weight: 800; color: var(--accent2); margin-bottom: 6px; }
+  .auth-card p { font-size: 0.82rem; color: var(--muted); margin-bottom: 22px; }
+  .auth-field { margin-bottom: 16px; }
+  .auth-field label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .auth-input { width: 100%; padding: 11px 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+  .auth-input:focus { border-color: var(--accent); }
+  .pin-row { display: flex; gap: 10px; }
+  .pin-digit { width: 52px; height: 52px; text-align: center; font-size: 1.4rem; font-weight: 800; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--accent2); outline: none; transition: border-color 0.2s; }
+  .pin-digit:focus { border-color: var(--accent); }
+  .auth-error { color: #e74c3c; font-size: 0.82rem; margin-bottom: 14px; min-height: 18px; }
+  .auth-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0a0e1a; font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
+  .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(201,162,39,0.4); }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .auth-user-bar { background: var(--card2); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; }
+  .auth-user-bar span { color: var(--muted); }
+  .auth-user-bar strong { color: var(--accent2); }
+  .auth-logout { background: none; border: none; color: var(--muted); font-size: 0.78rem; cursor: pointer; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -199,7 +223,7 @@
 <!--  REPLACE THIS URL with your Google Apps Script deploy URL   -->
 <!-- ============================================================ -->
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsH-kwIDYbNjB9_SZR3SB9LSq2-0q1QZrpglKPF3c4cwZMB6cIP75ACxnT6L68HIsphA/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw160HevXoFiyzyOpgK9vVB3eqSt9IV-FFNF-1bjKz0HW34dVeMnyS34vcABHjx-MzU6w/exec';
   // June 11, 2026 3:00pm ET = 19:00 UTC (EDT = UTC-4)
   const DEADLINE = new Date('2026-06-11T19:00:00Z');
   const isPastDeadline = () => new Date() >= DEADLINE;
@@ -217,8 +241,78 @@
 <!-- ===== PICKS TAB ===== -->
 <div id="tab-picks" class="screen active">
 
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen">
+    <header>
+      <h1>⚽ Vinkster's World Cup Pool</h1>
+      <p style="color:var(--muted);margin-top:6px;font-size:0.95rem;">Sign up to enter or log in to edit your picks</p>
+    </header>
+    <div class="auth-wrap">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">New Entry</button>
+        <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Edit My Picks</button>
+      </div>
+
+      <!-- SIGN UP -->
+      <div id="auth-signup-form">
+        <div class="auth-card">
+          <h2>Create Your Entry</h2>
+          <p>You'll use your email and PIN to come back and edit your picks.</p>
+          <div class="auth-field">
+            <label>Your Name</label>
+            <input class="auth-input" id="su-name" type="text" placeholder="First & last name" maxlength="40">
+          </div>
+          <div class="auth-field">
+            <label>Email Address</label>
+            <input class="auth-input" id="su-email" type="email" placeholder="you@example.com">
+          </div>
+          <div class="auth-field">
+            <label>Choose a 4-Digit PIN</label>
+            <div class="pin-row">
+              <input class="pin-digit" id="su-p1" type="number" min="0" max="9" maxlength="1">
+              <input class="pin-digit" id="su-p2" type="number" min="0" max="9" maxlength="1">
+              <input class="pin-digit" id="su-p3" type="number" min="0" max="9" maxlength="1">
+              <input class="pin-digit" id="su-p4" type="number" min="0" max="9" maxlength="1">
+            </div>
+          </div>
+          <div class="auth-error" id="su-error"></div>
+          <button class="auth-btn" id="su-btn" onclick="handleSignUp()">Create Account →</button>
+        </div>
+      </div>
+
+      <!-- LOG IN -->
+      <div id="auth-login-form" style="display:none;">
+        <div class="auth-card">
+          <h2>Welcome Back</h2>
+          <p>Enter your email and PIN to access your picks.</p>
+          <div class="auth-field">
+            <label>Email Address</label>
+            <input class="auth-input" id="li-email" type="email" placeholder="you@example.com">
+          </div>
+          <div class="auth-field">
+            <label>Your 4-Digit PIN</label>
+            <div class="pin-row">
+              <input class="pin-digit" id="li-p1" type="number" min="0" max="9" maxlength="1">
+              <input class="pin-digit" id="li-p2" type="number" min="0" max="9" maxlength="1">
+              <input class="pin-digit" id="li-p3" type="number" min="0" max="9" maxlength="1">
+              <input class="pin-digit" id="li-p4" type="number" min="0" max="9" maxlength="1">
+            </div>
+          </div>
+          <div class="auth-error" id="li-error"></div>
+          <button class="auth-btn" id="li-btn" onclick="handleLogin()">Access My Picks →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER BAR (shown when logged in) -->
+  <div id="auth-user-bar" class="auth-user-bar" style="display:none;">
+    <span>Logged in as <strong id="auth-username"></strong></span>
+    <button class="auth-logout" onclick="handleLogout()">Log out</button>
+  </div>
+
   <!-- GAME SCREEN -->
-  <div id="game-screen">
+  <div id="game-screen" style="display:none;">
     <header>
       <h1>⚽ Vinkster's World Cup Pool</h1>
       <p id="header-sub">Pick <strong style="color:var(--accent2)">1st & 2nd place</strong> from each of the 12 groups</p>
@@ -241,7 +335,6 @@
       <div class="groups-grid" id="groups-grid"></div>
     </main>
     <div class="sticky-footer">
-      <input class="name-input" id="player-name" type="text" placeholder="Your name" maxlength="40">
       <span class="footer-status" id="footer-status">Complete all 12 groups to submit</span>
       <button class="btn btn-primary" id="submit-btn" disabled onclick="handleSubmit()">
         Submit Picks →
@@ -493,44 +586,36 @@ function renderThirdGrid() {
 
 /* ===== SUBMIT GROUP PICKS → GO TO THIRD SCREEN ===== */
 function handleSubmit() {
-  const name = document.getElementById('player-name').value.trim();
-  if (!name) return;
   showThirdScreen();
 }
 
 /* ===== FINAL SUBMIT (groups + third place) ===== */
 async function handleFinalSubmit() {
-  const name = document.getElementById('player-name').value.trim();
-
-  // Generate a new SID for first-timers, reuse for returning users
-  if (!userSID) {
-    userSID = generateSID();
-    localStorage.setItem(LS_KEY, JSON.stringify({ sid: userSID }));
-  }
-  const payload = { name, timestamp: new Date().toISOString(), picks: {}, thirdPlace: [], ip: userIP || '', sid: userSID };
+  const payload = {
+    email: currentUser.email,
+    pin:   currentUser.pin,
+    timestamp: new Date().toISOString(),
+    picks: {},
+    thirdPlace: []
+  };
   GROUPS.forEach((group, gi) => {
     payload.picks[group.name] = {
       first:  GROUPS[gi].teams[picks[gi].first].name,
       second: GROUPS[gi].teams[picks[gi].second].name,
     };
   });
-
   const eliminated = getEliminatedTeams();
   eliminated.forEach(({ team, key }) => {
     if (thirdPicks.has(key)) payload.thirdPlace.push(team.name);
   });
 
-  if (SCRIPT_URL !== 'YOUR_SCRIPT_URL_HERE') {
-    try {
-      const submitUrl = SCRIPT_URL + '?action=submit&data=' + encodeURIComponent(JSON.stringify(payload));
-      await fetch(submitUrl);
-    } catch (e) {
-      console.warn('Sheet submit failed:', e);
-    }
-  }
+  try {
+    const submitUrl = SCRIPT_URL + '?action=submit&data=' + encodeURIComponent(JSON.stringify(payload));
+    await fetch(submitUrl);
+  } catch (e) { console.warn('Sheet submit failed:', e); }
 
   showToast('✓ All picks submitted!');
-  showResults(name);
+  showResults(currentUser.name);
 }
 
 function showToast(msg) {
@@ -605,7 +690,7 @@ async function loadLeaderboard() {
     try {
       const res = await fetch(SCRIPT_URL + '?action=get');
       const rows = await res.json();
-      const data = (rows || []).slice(1).filter(r => r[1]);
+      const data = (rows || []).slice(1).filter(r => r[1] && r[2]); // must have name + email
       let names = data.length
         ? data.map((r, i) => `<div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
             <span style="color:var(--muted);font-weight:700;width:24px;">${i+1}</span>
@@ -667,15 +752,19 @@ async function loadLeaderboard() {
       });
     } catch(e) { /* results not available yet */ }
 
-    // ── Points calculation (2pt correct 1st, 1pt correct 2nd, 0.5pt correct 3rd) ──
+    // Col layout: [0]Timestamp [1]Name [2]Email [3]PIN [4..27]Group picks [28..35]3rd picks
+    const PICK_OFFSET = 4;
+    const THIRD_START = 28;
+
+    // ── Points calculation ────────────────────────────────────────
     const calcPoints = (row) => {
       let pts = 0;
       GROUPS.forEach((group, gi) => {
         const r = RESULTS[group.name];
         if (!r) return;
-        if (r.first  && row[2 + gi*2] === r.first)  pts += 2;
-        if (r.second && row[3 + gi*2] === r.second) pts += 1;
-        if (r.third) { for (let k = 26; k <= 33; k++) { if (row[k] === r.third) pts += 0.5; } }
+        if (r.first  && row[PICK_OFFSET + gi*2]     === r.first)  pts += 2;
+        if (r.second && row[PICK_OFFSET + gi*2 + 1] === r.second) pts += 1;
+        if (r.third) { for (let k = THIRD_START; k < THIRD_START + 8; k++) { if (row[k] === r.third) pts += 0.5; } }
       });
       return pts;
     };
@@ -687,14 +776,14 @@ async function loadLeaderboard() {
     // ── Build picks HTML for a user ──────────────────────────────
     const buildPicksHTML = (row) => {
       const thirdByGroup = {};
-      for (let k = 26; k <= 33; k++) {
+      for (let k = THIRD_START; k < THIRD_START + 8; k++) {
         const t = row[k];
         if (t && teamGroupMap[t] !== undefined) thirdByGroup[teamGroupMap[t]] = t;
       }
       let boxes = '';
       GROUPS.forEach((group, gi) => {
-        const first  = row[2 + gi*2] || '';
-        const second = row[3 + gi*2] || '';
+        const first  = row[PICK_OFFSET + gi*2]     || '';
+        const second = row[PICK_OFFSET + gi*2 + 1] || '';
         const third  = thirdByGroup[gi]  || '';
         boxes += `<div class="lb-group-box">
           <div class="lb-group-title">${group.name}</div>
@@ -785,97 +874,154 @@ function startCountdown() {
   setInterval(tick, 1000);
 }
 
-/* ===== DUAL-LOCK: localStorage + IP ===== */
-let userIP  = null;
-let userSID = null; // submission ID stored in localStorage
-let isReturning = false;
-const LS_KEY = 'wc2026_user';
+/* ===== AUTH ===== */
+const LS_KEY = 'wc2026_auth';
+let currentUser = null; // { name, email, pin }
 
-function generateSID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0;
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-  });
+function switchAuthTab(tab) {
+  document.getElementById('auth-signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('auth-login-form').style.display  = tab === 'login'  ? 'block' : 'none';
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('tab-login').classList.toggle('active',  tab === 'login');
 }
 
-function applyExistingPicks(d) {
-  isReturning = true;
+function getPin(prefix) {
+  return ['p1','p2','p3','p4'].map(id => document.getElementById(`${prefix}-${id}`).value).join('');
+}
 
-  // Lock name field
-  const nameInput = document.getElementById('player-name');
-  nameInput.value = d['Name'] || '';
-  nameInput.readOnly = true;
-  nameInput.style.opacity = '0.6';
-  nameInput.style.cursor = 'not-allowed';
-  nameInput.title = 'Your name is locked to your first entry';
-
-  // Pre-fill group picks
-  GROUPS.forEach((group, gi) => {
-    const first  = d[`${group.name} 1st`] || '';
-    const second = d[`${group.name} 2nd`] || '';
-    group.teams.forEach((team, ti) => {
-      if (team.name === first)  picks[gi].first  = ti;
-      if (team.name === second) picks[gi].second = ti;
+function setupPinInputs(prefix) {
+  ['p1','p2','p3','p4'].forEach((id, i, arr) => {
+    const el = document.getElementById(`${prefix}-${id}`);
+    el.addEventListener('input', () => {
+      el.value = el.value.slice(-1).replace(/\D/,'');
+      if (el.value && i < arr.length - 1) document.getElementById(`${prefix}-${arr[i+1]}`).focus();
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !el.value && i > 0) document.getElementById(`${prefix}-${arr[i-1]}`).focus();
     });
   });
-
-  // Pre-fill 3rd place picks
-  const teamKeyMap = {};
-  GROUPS.forEach((g, gi) => g.teams.forEach((t, ti) => { teamKeyMap[t.name] = `${gi}-${ti}`; }));
-  for (let k = 1; k <= 8; k++) {
-    const t = d[`3rd Place Pick ${k}`];
-    if (t && teamKeyMap[t]) thirdPicks.add(teamKeyMap[t]);
-  }
-
-  // Update button text
-  document.getElementById('submit-btn').textContent = 'Update Picks →';
-  document.getElementById('third-submit-btn').textContent = 'Update All Picks →';
-
-  renderGroups();
 }
 
-async function initUser() {
+async function handleSignUp() {
+  const name  = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim().toLowerCase();
+  const pin   = getPin('su');
+  const errEl = document.getElementById('su-error');
+  errEl.textContent = '';
+
+  if (!name)            return errEl.textContent = 'Please enter your name.';
+  if (!email.includes('@')) return errEl.textContent = 'Please enter a valid email.';
+  if (pin.length !== 4) return errEl.textContent = 'Please enter a 4-digit PIN.';
+
+  document.getElementById('su-btn').disabled = true;
+  document.getElementById('su-btn').textContent = 'Creating account…';
+
   try {
-    // Step 1: fetch IP quietly in background
-    try {
-      const ipRes = await fetch('https://api.ipify.org?format=json');
-      const ipData = await ipRes.json();
-      userIP = ipData.ip;
-    } catch(e) { /* IP unavailable, continue */ }
-
-    if (SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') return;
-
-    // Step 2: check localStorage first (fastest, most reliable)
-    const stored = localStorage.getItem(LS_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      userSID = parsed.sid;
-      const checkRes = await fetch(`${SCRIPT_URL}?action=check&id=${encodeURIComponent(userSID)}&ip=${encodeURIComponent(userIP || '')}`);
-      const checkData = await checkRes.json();
-      if (checkData.found) { applyExistingPicks(checkData.data); return; }
+    const res = await fetch(`${SCRIPT_URL}?action=register&data=${encodeURIComponent(JSON.stringify({ name, email, pin }))}`);
+    const data = await res.json();
+    if (data.exists) {
+      errEl.textContent = 'That email is already registered. Use "Edit My Picks" to log in.';
+    } else {
+      loginSuccess({ name, email, pin }, null);
     }
-
-    // Step 3: fallback — check by IP only
-    if (userIP) {
-      const checkRes = await fetch(`${SCRIPT_URL}?action=check&ip=${encodeURIComponent(userIP)}`);
-      const checkData = await checkRes.json();
-      if (checkData.found) {
-        // Sync localStorage with what the sheet has
-        const sid = checkData.data['Submission ID'] || generateSID();
-        userSID = sid;
-        localStorage.setItem(LS_KEY, JSON.stringify({ sid }));
-        applyExistingPicks(checkData.data);
-      }
-    }
-  } catch(err) {
-    console.warn('initUser error:', err);
+  } catch(e) {
+    errEl.textContent = 'Something went wrong. Please try again.';
   }
+  document.getElementById('su-btn').disabled = false;
+  document.getElementById('su-btn').textContent = 'Create Account →';
+}
+
+async function handleLogin() {
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  const pin   = getPin('li');
+  const errEl = document.getElementById('li-error');
+  errEl.textContent = '';
+
+  if (!email.includes('@')) return errEl.textContent = 'Please enter your email.';
+  if (pin.length !== 4)     return errEl.textContent = 'Please enter your 4-digit PIN.';
+
+  document.getElementById('li-btn').disabled = true;
+  document.getElementById('li-btn').textContent = 'Logging in…';
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=login&data=${encodeURIComponent(JSON.stringify({ email, pin }))}`);
+    const data = await res.json();
+    if (!data.found) {
+      errEl.textContent = 'Email or PIN not found. Check your details and try again.';
+    } else if (data.wrongPin) {
+      errEl.textContent = 'Incorrect PIN. Please try again.';
+    } else {
+      loginSuccess({ name: data.name, email, pin }, data.picks);
+    }
+  } catch(e) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+  }
+  document.getElementById('li-btn').disabled = false;
+  document.getElementById('li-btn').textContent = 'Access My Picks →';
+}
+
+function loginSuccess(user, existingData) {
+  currentUser = user;
+  localStorage.setItem(LS_KEY, JSON.stringify(user));
+
+  // Show user bar
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('auth-user-bar').style.display = 'flex';
+  document.getElementById('auth-username').textContent = user.name;
+  document.getElementById('game-screen').style.display = 'block';
+
+  // Pre-fill picks if returning
+  if (existingData) {
+    const teamKeyMap = {};
+    GROUPS.forEach((g, gi) => g.teams.forEach((t, ti) => { teamKeyMap[t.name] = `${gi}-${ti}`; }));
+    GROUPS.forEach((group, gi) => {
+      const first  = existingData[`${group.name} 1st`] || '';
+      const second = existingData[`${group.name} 2nd`] || '';
+      group.teams.forEach((team, ti) => {
+        if (team.name === first)  picks[gi].first  = ti;
+        if (team.name === second) picks[gi].second = ti;
+      });
+    });
+    for (let k = 1; k <= 8; k++) {
+      const t = existingData[`3rd Place Pick ${k}`];
+      if (t && teamKeyMap[t]) thirdPicks.add(teamKeyMap[t]);
+    }
+    document.getElementById('submit-btn').textContent = 'Update Picks →';
+    document.getElementById('third-submit-btn').textContent = 'Update All Picks →';
+  }
+
+  renderGroups();
+  applyDeadlineState();
+}
+
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+
+async function autoLogin(user) {
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=login&data=${encodeURIComponent(JSON.stringify({ email: user.email, pin: user.pin }))}`);
+    const data = await res.json();
+    if (data.found && !data.wrongPin) {
+      loginSuccess({ name: data.name, email: user.email, pin: user.pin }, data.picks);
+    } else {
+      localStorage.removeItem(LS_KEY); // stale credentials, clear them
+    }
+  } catch(e) { /* silent fail, show auth screen */ }
 }
 
 /* ===== INIT ===== */
 renderGroups();
-applyDeadlineState();
-initUser();
+setupPinInputs('su');
+setupPinInputs('li');
+
+// Auto-login from localStorage if credentials saved
+const savedAuth = localStorage.getItem(LS_KEY);
+if (savedAuth) {
+  try { autoLogin(JSON.parse(savedAuth)); } catch(e) { localStorage.removeItem(LS_KEY); }
+}
 </script>
 </body>
 </html>
