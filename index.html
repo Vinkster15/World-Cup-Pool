@@ -224,7 +224,7 @@
 <!--  REPLACE THIS URL with your Google Apps Script deploy URL   -->
 <!-- ============================================================ -->
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw160HevXoFiyzyOpgK9vVB3eqSt9IV-FFNF-1bjKz0HW34dVeMnyS34vcABHjx-MzU6w/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0pf7mvZ8nhmKkALnDEBn8byLlW70KlzY3Vo5ypLtbipOKBRh8rwofjBZ4qHBsZInqlw/exec';
   // June 11, 2026 3:00pm ET = 19:00 UTC (EDT = UTC-4)
   const DEADLINE = new Date('2026-06-11T19:00:00Z');
   const isPastDeadline = () => new Date() >= DEADLINE;
@@ -603,8 +603,16 @@ async function handleFinalSubmit() {
 
   try {
     const submitUrl = SCRIPT_URL + '?action=submit&data=' + encodeURIComponent(JSON.stringify(payload));
-    await fetch(submitUrl);
-  } catch (e) { console.warn('Sheet submit failed:', e); }
+    const res  = await fetch(submitUrl);
+    const json = await res.json();
+    if (!json.success) {
+      alert('Submit failed: ' + (json.error || 'Unknown error. Check the sheet setup.'));
+      return;
+    }
+  } catch (e) {
+    alert('Could not reach the server: ' + e.message);
+    return;
+  }
 
   showToast('✓ All picks submitted!');
   showResults(currentUser.name);
