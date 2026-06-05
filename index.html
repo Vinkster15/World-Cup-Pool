@@ -192,22 +192,23 @@
   .picks-locked-overlay h2 { font-size: 1.5rem; font-weight: 800; color: var(--accent2); margin-bottom: 10px; }
   .picks-locked-overlay p { color: var(--muted); font-size: 0.95rem; }
 
-  /* AUTH SCREEN */
-  .auth-wrap { max-width: 420px; margin: 48px auto; padding: 0 16px 60px; }
-  .auth-tabs { display: flex; background: var(--card2); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
+  /* AUTH MODAL */
+  .auth-modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .auth-modal-bg.hidden { display: none; }
+  .auth-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 420px; padding: 28px; }
+  .auth-modal-title { font-size: 1.2rem; font-weight: 800; color: var(--accent2); margin-bottom: 4px; }
+  .auth-modal-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; }
+  .auth-tabs { display: flex; background: var(--card2); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
   .auth-tab { flex: 1; padding: 9px; border: none; background: transparent; color: var(--muted); font-size: 0.88rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
   .auth-tab.active { background: var(--bg); color: var(--accent2); }
-  .auth-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
-  .auth-card h2 { font-size: 1.1rem; font-weight: 800; color: var(--accent2); margin-bottom: 6px; }
-  .auth-card p { font-size: 0.82rem; color: var(--muted); margin-bottom: 22px; }
-  .auth-field { margin-bottom: 16px; }
+  .auth-field { margin-bottom: 14px; }
   .auth-field label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
   .auth-input { width: 100%; padding: 11px 14px; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
   .auth-input:focus { border-color: var(--accent); }
   .pin-row { display: flex; gap: 10px; }
   .pin-digit { width: 52px; height: 52px; text-align: center; font-size: 1.4rem; font-weight: 800; background: var(--card2); border: 1px solid var(--border); border-radius: 8px; color: var(--accent2); outline: none; transition: border-color 0.2s; }
   .pin-digit:focus { border-color: var(--accent); }
-  .auth-error { color: #e74c3c; font-size: 0.82rem; margin-bottom: 14px; min-height: 18px; }
+  .auth-error { color: #e74c3c; font-size: 0.82rem; margin-bottom: 10px; min-height: 18px; }
   .auth-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0a0e1a; font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
   .auth-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(201,162,39,0.4); }
   .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -238,72 +239,62 @@
   <button class="nav-tab" onclick="showTab('rules')">📜 Rules & Payment</button>
 </nav>
 
-<!-- ===== PICKS TAB ===== -->
-<div id="tab-picks" class="screen active">
+<!-- AUTH MODAL (sits outside tabs, overlays everything) -->
+<div class="auth-modal-bg hidden" id="auth-modal">
+  <div class="auth-wrap">
+    <div class="auth-modal-title">⚽ Almost there!</div>
+    <div class="auth-modal-sub">Create an account or log in to save your picks.</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">New Entry</button>
+      <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Edit My Picks</button>
+    </div>
 
-  <!-- AUTH SCREEN -->
-  <div id="auth-screen">
-    <header>
-      <h1>⚽ Vinkster's World Cup Pool</h1>
-      <p style="color:var(--muted);margin-top:6px;font-size:0.95rem;">Sign up to enter or log in to edit your picks</p>
-    </header>
-    <div class="auth-wrap">
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">New Entry</button>
-        <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Edit My Picks</button>
+    <!-- SIGN UP -->
+    <div id="auth-signup-form">
+      <div class="auth-field">
+        <label>Your Name</label>
+        <input class="auth-input" id="su-name" type="text" placeholder="First & last name" maxlength="40">
       </div>
-
-      <!-- SIGN UP -->
-      <div id="auth-signup-form">
-        <div class="auth-card">
-          <h2>Create Your Entry</h2>
-          <p>You'll use your email and PIN to come back and edit your picks.</p>
-          <div class="auth-field">
-            <label>Your Name</label>
-            <input class="auth-input" id="su-name" type="text" placeholder="First & last name" maxlength="40">
-          </div>
-          <div class="auth-field">
-            <label>Email Address</label>
-            <input class="auth-input" id="su-email" type="email" placeholder="you@example.com">
-          </div>
-          <div class="auth-field">
-            <label>Choose a 4-Digit PIN</label>
-            <div class="pin-row">
-              <input class="pin-digit" id="su-p1" type="number" min="0" max="9" maxlength="1">
-              <input class="pin-digit" id="su-p2" type="number" min="0" max="9" maxlength="1">
-              <input class="pin-digit" id="su-p3" type="number" min="0" max="9" maxlength="1">
-              <input class="pin-digit" id="su-p4" type="number" min="0" max="9" maxlength="1">
-            </div>
-          </div>
-          <div class="auth-error" id="su-error"></div>
-          <button class="auth-btn" id="su-btn" onclick="handleSignUp()">Create Account →</button>
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input class="auth-input" id="su-email" type="email" placeholder="you@example.com">
+      </div>
+      <div class="auth-field">
+        <label>Choose a 4-Digit PIN</label>
+        <div class="pin-row">
+          <input class="pin-digit" id="su-p1" type="number" min="0" max="9">
+          <input class="pin-digit" id="su-p2" type="number" min="0" max="9">
+          <input class="pin-digit" id="su-p3" type="number" min="0" max="9">
+          <input class="pin-digit" id="su-p4" type="number" min="0" max="9">
         </div>
       </div>
+      <div class="auth-error" id="su-error"></div>
+      <button class="auth-btn" id="su-btn" onclick="handleSignUp()">Create Account & Submit →</button>
+    </div>
 
-      <!-- LOG IN -->
-      <div id="auth-login-form" style="display:none;">
-        <div class="auth-card">
-          <h2>Welcome Back</h2>
-          <p>Enter your email and PIN to access your picks.</p>
-          <div class="auth-field">
-            <label>Email Address</label>
-            <input class="auth-input" id="li-email" type="email" placeholder="you@example.com">
-          </div>
-          <div class="auth-field">
-            <label>Your 4-Digit PIN</label>
-            <div class="pin-row">
-              <input class="pin-digit" id="li-p1" type="number" min="0" max="9" maxlength="1">
-              <input class="pin-digit" id="li-p2" type="number" min="0" max="9" maxlength="1">
-              <input class="pin-digit" id="li-p3" type="number" min="0" max="9" maxlength="1">
-              <input class="pin-digit" id="li-p4" type="number" min="0" max="9" maxlength="1">
-            </div>
-          </div>
-          <div class="auth-error" id="li-error"></div>
-          <button class="auth-btn" id="li-btn" onclick="handleLogin()">Access My Picks →</button>
+    <!-- LOG IN -->
+    <div id="auth-login-form" style="display:none;">
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input class="auth-input" id="li-email" type="email" placeholder="you@example.com">
+      </div>
+      <div class="auth-field">
+        <label>Your 4-Digit PIN</label>
+        <div class="pin-row">
+          <input class="pin-digit" id="li-p1" type="number" min="0" max="9">
+          <input class="pin-digit" id="li-p2" type="number" min="0" max="9">
+          <input class="pin-digit" id="li-p3" type="number" min="0" max="9">
+          <input class="pin-digit" id="li-p4" type="number" min="0" max="9">
         </div>
       </div>
+      <div class="auth-error" id="li-error"></div>
+      <button class="auth-btn" id="li-btn" onclick="handleLogin()">Log In & Submit →</button>
     </div>
   </div>
+</div>
+
+<!-- ===== PICKS TAB ===== -->
+<div id="tab-picks" class="screen active">
 
   <!-- USER BAR (shown when logged in) -->
   <div id="auth-user-bar" class="auth-user-bar" style="display:none;">
@@ -311,8 +302,8 @@
     <button class="auth-logout" onclick="handleLogout()">Log out</button>
   </div>
 
-  <!-- GAME SCREEN -->
-  <div id="game-screen" style="display:none;">
+  <!-- GAME SCREEN (shown by default) -->
+  <div id="game-screen">
     <header>
       <h1>⚽ Vinkster's World Cup Pool</h1>
       <p id="header-sub">Pick <strong style="color:var(--accent2)">1st & 2nd place</strong> from each of the 12 groups</p>
@@ -584,9 +575,13 @@ function renderThirdGrid() {
   document.getElementById('third-submit-btn').disabled = thirdPicks.size !== 8;
 }
 
-/* ===== SUBMIT GROUP PICKS → GO TO THIRD SCREEN ===== */
+/* ===== SUBMIT GROUP PICKS → AUTH MODAL OR THIRD SCREEN ===== */
 function handleSubmit() {
-  showThirdScreen();
+  if (currentUser) {
+    showThirdScreen(); // already logged in, go straight to 3rd place
+  } else {
+    document.getElementById('auth-modal').classList.remove('hidden'); // show auth modal
+  }
 }
 
 /* ===== FINAL SUBMIT (groups + third place) ===== */
@@ -909,26 +904,33 @@ async function handleSignUp() {
   const errEl = document.getElementById('su-error');
   errEl.textContent = '';
 
-  if (!name)            return errEl.textContent = 'Please enter your name.';
+  if (!name)                return errEl.textContent = 'Please enter your name.';
   if (!email.includes('@')) return errEl.textContent = 'Please enter a valid email.';
-  if (pin.length !== 4) return errEl.textContent = 'Please enter a 4-digit PIN.';
+  if (pin.length !== 4)     return errEl.textContent = 'Please enter all 4 PIN digits.';
 
-  document.getElementById('su-btn').disabled = true;
-  document.getElementById('su-btn').textContent = 'Creating account…';
+  const btn = document.getElementById('su-btn');
+  btn.disabled = true;
+  btn.textContent = 'Creating account…';
 
   try {
-    const res = await fetch(`${SCRIPT_URL}?action=register&data=${encodeURIComponent(JSON.stringify({ name, email, pin }))}`);
-    const data = await res.json();
+    const url = `${SCRIPT_URL}?action=register&data=${encodeURIComponent(JSON.stringify({ name, email, pin }))}`;
+    const res  = await fetch(url);
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { throw new Error('Bad response: ' + text.slice(0, 100)); }
+
     if (data.exists) {
       errEl.textContent = 'That email is already registered. Use "Edit My Picks" to log in.';
+    } else if (data.error) {
+      errEl.textContent = 'Error: ' + data.error;
     } else {
-      loginSuccess({ name, email, pin }, null);
+      loginSuccess({ name, email, pin }, null, true);
     }
   } catch(e) {
-    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.textContent = 'Error: ' + e.message;
   }
-  document.getElementById('su-btn').disabled = false;
-  document.getElementById('su-btn').textContent = 'Create Account →';
+  btn.disabled = false;
+  btn.textContent = 'Create Account & Submit →';
 }
 
 async function handleLogin() {
@@ -938,39 +940,45 @@ async function handleLogin() {
   errEl.textContent = '';
 
   if (!email.includes('@')) return errEl.textContent = 'Please enter your email.';
-  if (pin.length !== 4)     return errEl.textContent = 'Please enter your 4-digit PIN.';
+  if (pin.length !== 4)     return errEl.textContent = 'Please enter all 4 PIN digits.';
 
-  document.getElementById('li-btn').disabled = true;
-  document.getElementById('li-btn').textContent = 'Logging in…';
+  const btn = document.getElementById('li-btn');
+  btn.disabled = true;
+  btn.textContent = 'Logging in…';
 
   try {
-    const res = await fetch(`${SCRIPT_URL}?action=login&data=${encodeURIComponent(JSON.stringify({ email, pin }))}`);
-    const data = await res.json();
+    const url = `${SCRIPT_URL}?action=login&data=${encodeURIComponent(JSON.stringify({ email, pin }))}`;
+    const res  = await fetch(url);
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { throw new Error('Bad response: ' + text.slice(0, 100)); }
+
     if (!data.found) {
-      errEl.textContent = 'Email or PIN not found. Check your details and try again.';
+      errEl.textContent = 'Email not found. Please sign up first.';
     } else if (data.wrongPin) {
       errEl.textContent = 'Incorrect PIN. Please try again.';
+    } else if (data.error) {
+      errEl.textContent = 'Error: ' + data.error;
     } else {
-      loginSuccess({ name: data.name, email, pin }, data.picks);
+      loginSuccess({ name: data.name, email, pin }, data.picks, true);
     }
   } catch(e) {
-    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.textContent = 'Error: ' + e.message;
   }
-  document.getElementById('li-btn').disabled = false;
-  document.getElementById('li-btn').textContent = 'Access My Picks →';
+  btn.disabled = false;
+  btn.textContent = 'Log In & Submit →';
 }
 
-function loginSuccess(user, existingData) {
+function loginSuccess(user, existingData, proceedToThird = false) {
   currentUser = user;
   localStorage.setItem(LS_KEY, JSON.stringify(user));
 
-  // Show user bar
-  document.getElementById('auth-screen').style.display = 'none';
+  // Close modal, show user bar
+  document.getElementById('auth-modal').classList.add('hidden');
   document.getElementById('auth-user-bar').style.display = 'flex';
   document.getElementById('auth-username').textContent = user.name;
-  document.getElementById('game-screen').style.display = 'block';
 
-  // Pre-fill picks if returning
+  // Pre-fill picks if returning user has existing data
   if (existingData) {
     const teamKeyMap = {};
     GROUPS.forEach((g, gi) => g.teams.forEach((t, ti) => { teamKeyMap[t.name] = `${gi}-${ti}`; }));
@@ -992,6 +1000,9 @@ function loginSuccess(user, existingData) {
 
   renderGroups();
   applyDeadlineState();
+
+  // If coming from submit button, proceed to 3rd place screen
+  if (proceedToThird) showThirdScreen();
 }
 
 function handleLogout() {
@@ -1005,7 +1016,7 @@ async function autoLogin(user) {
     const res = await fetch(`${SCRIPT_URL}?action=login&data=${encodeURIComponent(JSON.stringify({ email: user.email, pin: user.pin }))}`);
     const data = await res.json();
     if (data.found && !data.wrongPin) {
-      loginSuccess({ name: data.name, email: user.email, pin: user.pin }, data.picks);
+      loginSuccess({ name: data.name, email: user.email, pin: user.pin }, data.picks, false);
     } else {
       localStorage.removeItem(LS_KEY); // stale credentials, clear them
     }
