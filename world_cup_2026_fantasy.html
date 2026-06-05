@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 World Cup Fantasy — Group Stage Predictor</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --card: #131929;
+    --card2: #1a2238;
+    --accent: #c9a227;
+    --accent2: #e8c547;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --text: #e8eaf0;
+    --muted: #7a8499;
+    --border: #2a3550;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, #0d1b3e 0%, #1a3a6e 50%, #0d1b3e 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 28px 20px 20px;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--accent2);
+    text-shadow: 0 2px 12px rgba(201,162,39,0.4);
+  }
+  header p {
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 0.95rem;
+  }
+  .progress-bar-wrap {
+    max-width: 500px;
+    margin: 14px auto 0;
+    background: var(--border);
+    border-radius: 20px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 20px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 16px;
+  }
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .group-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .group-card.complete {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(201,162,39,0.3);
+  }
+  .group-header {
+    background: var(--card2);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .group-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent2);
+    letter-spacing: 1px;
+  }
+  .group-badge {
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 2px 8px;
+  }
+  .group-badge.done {
+    background: rgba(201,162,39,0.15);
+    color: var(--accent2);
+  }
+  .team-list {
+    padding: 8px 0;
+  }
+  .team-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+    border-bottom: 1px solid rgba(42,53,80,0.5);
+  }
+  .team-row:last-child { border-bottom: none; }
+  .team-row:hover { background: rgba(255,255,255,0.04); }
+  .team-row.selected {
+    background: rgba(201,162,39,0.12);
+  }
+  .team-row.selected .team-name { color: var(--accent2); font-weight: 600; }
+  .team-row.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .team-row.disabled:hover { background: transparent; }
+  .check-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .team-row.selected .check-circle {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+  .check-circle svg { display: none; }
+  .team-row.selected .check-circle svg { display: block; }
+  .flag { font-size: 1.4rem; line-height: 1; }
+  .team-name { font-size: 0.9rem; flex: 1; }
+  .rank-badge {
+    font-size: 0.65rem;
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
+  .sticky-footer {
+    position: sticky;
+    bottom: 0;
+    background: rgba(10,14,26,0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 100;
+  }
+  .btn {
+    padding: 11px 28px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #0a0e1a;
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(201,162,39,0.4);
+  }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .footer-status {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  /* Results screen */
+  #results-screen { display: none; }
+  #results-screen.active { display: block; }
+  #game-screen.hidden { display: none; }
+
+  .results-hero {
+    text-align: center;
+    padding: 40px 20px 24px;
+    background: linear-gradient(135deg, #0d1b3e 0%, #1a3a6e 50%, #0d1b3e 100%);
+    border-bottom: 2px solid var(--accent);
+  }
+  .results-hero h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent2);
+  }
+  .results-hero p { color: var(--muted); margin-top: 6px; }
+  .results-grid {
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .result-card-header {
+    background: var(--card2);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .result-team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(42,53,80,0.5);
+  }
+  .result-team:last-child { border-bottom: none; }
+  .result-team .flag { font-size: 1.4rem; }
+  .result-team .team-name { flex: 1; font-size: 0.9rem; }
+  .advancing-badge {
+    font-size: 0.7rem;
+    background: rgba(39,174,96,0.2);
+    color: #2ecc71;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-weight: 600;
+  }
+  .eliminated-badge {
+    font-size: 0.7rem;
+    background: rgba(231,76,60,0.15);
+    color: #e74c3c;
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .summary-bar {
+    max-width: 700px;
+    margin: 0 auto 32px;
+    padding: 0 16px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .summary-bar strong { color: var(--accent2); font-size: 1.1rem; }
+</style>
+</head>
+<body>
+
+<!-- GAME SCREEN -->
+<div id="game-screen">
+  <header>
+    <h1>⚽ 2026 World Cup Predictor</h1>
+    <p>Pick <strong style="color:var(--accent2)">2 teams</strong> from each group to advance to the Round of 24</p>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar"></div>
+    </div>
+    <div class="progress-label" id="progress-label">0 of 8 groups complete</div>
+  </header>
+
+  <main>
+    <div class="groups-grid" id="groups-grid"></div>
+  </main>
+
+  <div class="sticky-footer">
+    <span class="footer-status" id="footer-status">Complete all 8 groups to submit</span>
+    <button class="btn btn-primary" id="submit-btn" disabled onclick="showResults()">
+      Submit Predictions →
+    </button>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="results-screen">
+  <div class="results-hero">
+    <h2>🏆 Your Predictions</h2>
+    <p>24 teams advancing from the group stage</p>
+  </div>
+  <div class="summary-bar" id="summary-bar"></div>
+  <div class="results-grid" id="results-grid"></div>
+  <div style="text-align:center;padding:0 0 40px;">
+    <button class="btn btn-ghost" onclick="goBack()">← Edit Predictions</button>
+  </div>
+</div>
+
+<script>
+const GROUPS = [
+  {
+    name: "Group A",
+    teams: [
+      { name: "Mexico",               flag: "🇲🇽" },
+      { name: "South Africa",         flag: "🇿🇦" },
+      { name: "South Korea",          flag: "🇰🇷" },
+      { name: "Czechia",              flag: "🇨🇿" },
+    ]
+  },
+  {
+    name: "Group B",
+    teams: [
+      { name: "Canada",               flag: "🇨🇦" },
+      { name: "Bosnia & Herzegovina", flag: "🇧🇦" },
+      { name: "Qatar",                flag: "🇶🇦" },
+      { name: "Switzerland",          flag: "🇨🇭" },
+    ]
+  },
+  {
+    name: "Group C",
+    teams: [
+      { name: "Brazil",               flag: "🇧🇷" },
+      { name: "Morocco",              flag: "🇲🇦" },
+      { name: "Haiti",                flag: "🇭🇹" },
+      { name: "Scotland",             flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+    ]
+  },
+  {
+    name: "Group D",
+    teams: [
+      { name: "United States",        flag: "🇺🇸" },
+      { name: "Paraguay",             flag: "🇵🇾" },
+      { name: "Australia",            flag: "🇦🇺" },
+      { name: "Turkey",               flag: "🇹🇷" },
+    ]
+  },
+  {
+    name: "Group E",
+    teams: [
+      { name: "Germany",              flag: "🇩🇪" },
+      { name: "Curaçao",              flag: "🇨🇼" },
+      { name: "Ivory Coast",          flag: "🇨🇮" },
+      { name: "Ecuador",              flag: "🇪🇨" },
+    ]
+  },
+  {
+    name: "Group F",
+    teams: [
+      { name: "Netherlands",          flag: "🇳🇱" },
+      { name: "Japan",                flag: "🇯🇵" },
+      { name: "Sweden",               flag: "🇸🇪" },
+      { name: "Tunisia",              flag: "🇹🇳" },
+    ]
+  },
+  {
+    name: "Group G",
+    teams: [
+      { name: "Belgium",              flag: "🇧🇪" },
+      { name: "Egypt",                flag: "🇪🇬" },
+      { name: "Iran",                 flag: "🇮🇷" },
+      { name: "New Zealand",          flag: "🇳🇿" },
+    ]
+  },
+  {
+    name: "Group H",
+    teams: [
+      { name: "Spain",                flag: "🇪🇸" },
+      { name: "Cape Verde",           flag: "🇨🇻" },
+      { name: "Saudi Arabia",         flag: "🇸🇦" },
+      { name: "Uruguay",              flag: "🇺🇾" },
+    ]
+  },
+  {
+    name: "Group I",
+    teams: [
+      { name: "France",               flag: "🇫🇷" },
+      { name: "Senegal",              flag: "🇸🇳" },
+      { name: "Iraq",                 flag: "🇮🇶" },
+      { name: "Norway",               flag: "🇳🇴" },
+    ]
+  },
+  {
+    name: "Group J",
+    teams: [
+      { name: "Argentina",            flag: "🇦🇷" },
+      { name: "Algeria",              flag: "🇩🇿" },
+      { name: "Austria",              flag: "🇦🇹" },
+      { name: "Jordan",               flag: "🇯🇴" },
+    ]
+  },
+  {
+    name: "Group K",
+    teams: [
+      { name: "Portugal",             flag: "🇵🇹" },
+      { name: "DR Congo",             flag: "🇨🇩" },
+      { name: "Uzbekistan",           flag: "🇺🇿" },
+      { name: "Colombia",             flag: "🇨🇴" },
+    ]
+  },
+  {
+    name: "Group L",
+    teams: [
+      { name: "England",              flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+      { name: "Croatia",              flag: "🇭🇷" },
+      { name: "Ghana",                flag: "🇬🇭" },
+      { name: "Panama",               flag: "🇵🇦" },
+    ]
+  }
+];
+
+// State: picks[groupIndex] = Set of team indices
+const picks = GROUPS.map(() => new Set());
+
+function renderGroups() {
+  const grid = document.getElementById('groups-grid');
+  grid.innerHTML = '';
+  GROUPS.forEach((group, gi) => {
+    const card = document.createElement('div');
+    card.className = 'group-card' + (picks[gi].size === 2 ? ' complete' : '');
+    card.id = `group-${gi}`;
+
+    const header = document.createElement('div');
+    header.className = 'group-header';
+    header.innerHTML = `
+      <h2>${group.name}</h2>
+      <span class="group-badge ${picks[gi].size === 2 ? 'done' : ''}" id="badge-${gi}">
+        ${picks[gi].size}/2 picked
+      </span>`;
+    card.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'team-list';
+
+    group.teams.forEach((team, ti) => {
+      const isSelected = picks[gi].has(ti);
+      const groupFull = picks[gi].size === 2;
+      const isDisabled = !isSelected && groupFull;
+
+      const row = document.createElement('div');
+      row.className = 'team-row' +
+        (isSelected ? ' selected' : '') +
+        (isDisabled ? ' disabled' : '');
+
+      row.innerHTML = `
+        <div class="check-circle">
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 4L3.5 6.5L9 1" stroke="#0a0e1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="flag">${team.flag}</span>
+        <span class="team-name">${team.name}</span>`;
+
+      if (!isDisabled) {
+        row.addEventListener('click', () => togglePick(gi, ti));
+      }
+      list.appendChild(row);
+    });
+
+    card.appendChild(list);
+    grid.appendChild(card);
+  });
+  updateProgress();
+}
+
+function togglePick(gi, ti) {
+  if (picks[gi].has(ti)) {
+    picks[gi].delete(ti);
+  } else {
+    if (picks[gi].size < 2) picks[gi].add(ti);
+  }
+  renderGroups();
+}
+
+function updateProgress() {
+  const done = picks.filter(p => p.size === 2).length;
+  const pct = (done / GROUPS.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${done} of ${GROUPS.length} groups complete (${done * 2} of ${GROUPS.length * 2} teams picked)`;
+
+  const allDone = done === GROUPS.length;
+  document.getElementById('submit-btn').disabled = !allDone;
+  document.getElementById('footer-status').textContent = allDone
+    ? `All ${GROUPS.length} groups picked — ready to submit!`
+    : `${GROUPS.length - done} group${GROUPS.length - done !== 1 ? 's' : ''} remaining`;
+}
+
+function showResults() {
+  document.getElementById('game-screen').classList.add('hidden');
+  const rs = document.getElementById('results-screen');
+  rs.classList.add('active');
+
+  const grid = document.getElementById('results-grid');
+  grid.innerHTML = '';
+
+  let advancingTeams = [];
+
+  GROUPS.forEach((group, gi) => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `<div class="result-card-header">${group.name}</div>`;
+
+    group.teams.forEach((team, ti) => {
+      const advancing = picks[gi].has(ti);
+      if (advancing) advancingTeams.push(team);
+      const row = document.createElement('div');
+      row.className = 'result-team';
+      row.innerHTML = `
+        <span class="flag">${team.flag}</span>
+        <span class="team-name">${team.name}</span>
+        ${advancing
+          ? '<span class="advancing-badge">✓ Advancing</span>'
+          : '<span class="eliminated-badge">Eliminated</span>'}`;
+      card.appendChild(row);
+    });
+
+    grid.appendChild(card);
+  });
+
+  // Summary
+  const topPicks = advancingTeams.slice(0, 3).map(t => t.flag + ' ' + t.name).join(', ');
+  document.getElementById('summary-bar').innerHTML = `
+    <p style="margin-bottom:8px;">You've selected <strong>${advancingTeams.length} teams</strong> to advance from the group stage.</p>
+    <p style="color:var(--muted)">Top picks: ${topPicks}${advancingTeams.length > 3 ? ' and more.' : '.'}</p>`;
+
+  rs.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.remove('hidden');
+}
+
+// Init
+renderGroups();
+</script>
+</body>
+</html>
