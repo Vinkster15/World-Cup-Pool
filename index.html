@@ -142,11 +142,25 @@
   .leaderboard-wrap h2 { font-size: 1.4rem; font-weight: 800; color: var(--accent2); margin-bottom: 6px; }
   .leaderboard-wrap .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 24px; }
   .lb-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-  /* LEADERBOARD ENTRIES */
-  .lb-entry { margin-bottom: 32px; padding-bottom: 32px; border-bottom: 2px solid var(--border); }
-  .lb-entry:last-child { border-bottom: none; }
-  .lb-player-name { font-size: 1.2rem; font-weight: 800; color: var(--accent2); margin-bottom: 14px; }
-  .lb-groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  /* LEADERBOARD TABLE */
+  .lb-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .lb-table th { background: var(--card2); color: var(--muted); font-weight: 600; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .lb-row { cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--border); }
+  .lb-row:hover { background: rgba(255,255,255,0.03); }
+  .lb-row td { padding: 12px 14px; vertical-align: middle; }
+  .lb-rank { font-weight: 800; color: var(--muted); width: 36px; }
+  .lb-rank.top { color: var(--accent2); }
+  .lb-uname { font-weight: 700; color: var(--text); }
+  .lb-pts { font-weight: 800; font-size: 1rem; color: var(--accent2); text-align: right; white-space: nowrap; }
+  .lb-pts span { font-size: 0.7rem; color: var(--muted); font-weight: 400; margin-left: 2px; }
+  .lb-chevron { color: var(--muted); font-size: 0.8rem; text-align: right; transition: transform 0.2s; width: 24px; }
+  .lb-row.expanded .lb-chevron { transform: rotate(180deg); }
+  /* EXPANDED PICKS */
+  .lb-expand-row { display: none; }
+  .lb-expand-row.open { display: table-row; }
+  .lb-expand-cell { padding: 0 !important; border-bottom: 2px solid var(--accent) !important; }
+  .lb-expand-inner { padding: 16px; background: rgba(0,0,0,0.2); }
+  .lb-groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 8px; }
   .lb-group-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   .lb-group-title { background: var(--card2); font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; padding: 5px 10px; border-bottom: 1px solid var(--border); }
   .lb-group-team { display: flex; align-items: center; gap: 6px; padding: 5px 10px; font-size: 0.78rem; border-bottom: 1px solid rgba(42,53,80,0.4); }
@@ -569,63 +583,98 @@ async function loadLeaderboard() {
 
     const data = rows.slice(1);
 
-    // Build flag lookup: team name → country code
+    // ── Lookup helpers ──────────────────────────────────────────
     const flagMap = {};
     GROUPS.forEach(g => g.teams.forEach(t => { flagMap[t.name] = t.code; }));
-
-    // Build group membership: team name → group index
     const teamGroupMap = {};
     GROUPS.forEach((g, gi) => g.teams.forEach(t => { teamGroupMap[t.name] = gi; }));
 
-    const teamRow = (name, cls, medal) => {
+    const teamRowHTML = (name, cls, medal) => {
       const code = flagMap[name] || '';
       const img = code ? `<img src="https://flagcdn.com/w40/${code}.png" alt="">` : '';
-      return `<div class="lb-group-team ${cls}">
-        <span class="medal">${medal}</span>${img}<span>${name}</span>
-      </div>`;
+      return `<div class="lb-group-team ${cls}"><span class="medal">${medal}</span>${img}<span>${name}</span></div>`;
     };
 
-    let html = '<div>';
+    // ── Points calculation ───────────────────────────────────────
+    // Fill in RESULTS once the tournament starts:
+    // e.g. RESULTS['Group A'] = { first: 'Mexico', second: 'South Korea', third: 'Czechia' }
+    const RESULTS = {};
+    const calcPoints = (row) => {
+      let pts = 0;
+      GROUPS.forEach((group, gi) => {
+        const r = RESULTS[group.name];
+        if (!r) return;
+        if (row[2 + gi*2] === r.first)  pts += 3;
+        if (row[3 + gi*2] === r.second) pts += 2;
+        for (let k = 26; k <= 33; k++) { if (row[k] === r.third) pts += 1; }
+      });
+      return pts;
+    };
 
-    data.forEach((row) => {
-      const name = row[1] || 'Anonymous';
+    // ── Sort by points desc ──────────────────────────────────────
+    const scored = data.map(row => ({ row, pts: calcPoints(row) }))
+                       .sort((a, b) => b.pts - a.pts);
 
-      // Collect 3rd place picks and map to group index
+    // ── Build picks HTML for a user ──────────────────────────────
+    const buildPicksHTML = (row) => {
       const thirdByGroup = {};
       for (let k = 26; k <= 33; k++) {
         const t = row[k];
-        if (t) {
-          const gi = teamGroupMap[t];
-          if (gi !== undefined) thirdByGroup[gi] = t;
-        }
+        if (t && teamGroupMap[t] !== undefined) thirdByGroup[teamGroupMap[t]] = t;
       }
-
-      let groupBoxes = '';
+      let boxes = '';
       GROUPS.forEach((group, gi) => {
-        const first  = row[2 + gi * 2] || '';
-        const second = row[3 + gi * 2] || '';
-        const third  = thirdByGroup[gi] || '';
-        groupBoxes += `
-          <div class="lb-group-box">
-            <div class="lb-group-title">${group.name}</div>
-            ${first  ? teamRow(first,  'gold',   '🥇') : ''}
-            ${second ? teamRow(second, 'silver',  '🥈') : ''}
-            ${third  ? teamRow(third,  'bronze',  '🥉') : ''}
-          </div>`;
-      });
-
-      html += `
-        <div class="lb-entry">
-          <div class="lb-player-name">👤 ${name}</div>
-          <div class="lb-groups-grid">${groupBoxes}</div>
+        const first  = row[2 + gi*2] || '';
+        const second = row[3 + gi*2] || '';
+        const third  = thirdByGroup[gi]  || '';
+        boxes += `<div class="lb-group-box">
+          <div class="lb-group-title">${group.name}</div>
+          ${first  ? teamRowHTML(first,  'gold',   '🥇') : ''}
+          ${second ? teamRowHTML(second, 'silver', '🥈') : ''}
+          ${third  ? teamRowHTML(third,  'bronze', '🥉') : ''}
         </div>`;
+      });
+      return `<div class="lb-groups-grid">${boxes}</div>`;
+    };
+
+    // ── Render table ─────────────────────────────────────────────
+    let html = `<table class="lb-table">
+      <thead><tr>
+        <th>#</th><th>Player</th><th style="text-align:right;">Points</th><th></th>
+      </tr></thead><tbody>`;
+
+    scored.forEach(({ row, pts }, i) => {
+      const name = row[1] || 'Anonymous';
+      const rank = i + 1;
+      const uid  = `user-${i}`;
+      html += `
+        <tr class="lb-row" onclick="toggleExpand('${uid}')">
+          <td class="lb-rank ${rank <= 3 ? 'top' : ''}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</td>
+          <td class="lb-uname">${name}</td>
+          <td class="lb-pts">${pts}<span>pts</span></td>
+          <td class="lb-chevron">▼</td>
+        </tr>
+        <tr class="lb-expand-row" id="${uid}">
+          <td class="lb-expand-cell" colspan="4">
+            <div class="lb-expand-inner">${buildPicksHTML(row)}</div>
+          </td>
+        </tr>`;
     });
 
-    html += '</div>';
+    html += '</tbody></table>';
     el.innerHTML = html;
   } catch (e) {
     el.innerHTML = '<div class="lb-empty">Could not load leaderboard. Check your Script URL.</div>';
   }
+}
+
+/* ===== LEADERBOARD EXPAND ===== */
+function toggleExpand(uid) {
+  const expandRow = document.getElementById(uid);
+  const mainRow = expandRow.previousElementSibling;
+  const isOpen = expandRow.classList.contains('open');
+  expandRow.classList.toggle('open', !isOpen);
+  mainRow.classList.toggle('expanded', !isOpen);
 }
 
 /* ===== DEADLINE / LOCK ===== */
