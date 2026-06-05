@@ -41,9 +41,14 @@
     cursor: pointer;
     transition: all 0.2s;
     letter-spacing: 0.3px;
+    white-space: nowrap;
   }
   .nav-tab:hover { color: var(--text); }
   .nav-tab.active { background: var(--card2); color: var(--accent2); }
+  @media (max-width: 480px) {
+    .top-nav { padding: 6px 8px; gap: 2px; }
+    .nav-tab { padding: 6px 10px; font-size: 0.75rem; }
+  }
 
   /* HEADER */
   header {
@@ -194,7 +199,7 @@
 <!--  REPLACE THIS URL with your Google Apps Script deploy URL   -->
 <!-- ============================================================ -->
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyc9SPVujO8iIN6yBYEPFhpXvMoW6dNuBDBOMMx71G3_5RYCDREpag7HJTaKF3WVVWJw/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTrNiP1rFnf8Z7dZfwVRyjZuKQOOz1brFcuuZGjMvwL6ezR-gds-BFDkt4DyJ9L4eR_A/exec';
   // June 11, 2026 3:00pm ET = 19:00 UTC (EDT = UTC-4)
   const DEADLINE = new Date('2026-06-11T19:00:00Z');
   const isPastDeadline = () => new Date() >= DEADLINE;
@@ -320,9 +325,6 @@
   <div class="leaderboard-wrap">
     <h2>🏆 Leaderboard <button class="btn btn-ghost refresh-btn" style="font-size:0.8rem;padding:6px 14px;" onclick="loadLeaderboard()">↻ Refresh</button></h2>
     <p class="sub">All submitted picks — scoring unlocks when match results come in</p>
-    <div style="background:rgba(201,162,39,0.07);border:1px solid rgba(201,162,39,0.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;text-align:center;font-size:0.88rem;color:var(--muted);">
-      ⚽ Leaderboard will populate once the 1st game begins
-    </div>
     <div id="lb-content"><div class="lb-loading">Loading submissions…</div></div>
   </div>
 </div>
@@ -500,7 +502,7 @@ function handleSubmit() {
 async function handleFinalSubmit() {
   const name = document.getElementById('player-name').value.trim();
 
-  const payload = { name, timestamp: new Date().toISOString(), picks: {}, thirdPlace: [] };
+  const payload = { name, timestamp: new Date().toISOString(), picks: {}, thirdPlace: [], ip: userIP || '' };
   GROUPS.forEach((group, gi) => {
     payload.picks[group.name] = {
       first:  GROUPS[gi].teams[picks[gi].first].name,
@@ -599,11 +601,6 @@ async function loadLeaderboard() {
       const res = await fetch(SCRIPT_URL + '?action=get');
       const rows = await res.json();
       const data = (rows || []).slice(1).filter(r => r[1]);
-      const diff = DEADLINE - new Date();
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
       let names = data.length
         ? data.map((r, i) => `<div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
             <span style="color:var(--muted);font-weight:700;width:24px;">${i+1}</span>
@@ -615,12 +612,6 @@ async function loadLeaderboard() {
         <div class="locked-banner" style="margin-bottom:20px;">
           <h3>🔒 Picks are hidden until June 11 at 3:00pm ET</h3>
           <p>Everyone can see who's entered, but picks reveal at the deadline.</p>
-          <div class="countdown" style="margin-top:14px;">
-            <div class="cd-block"><div class="cd-num">${d}</div><div class="cd-label">Days</div></div>
-            <div class="cd-block"><div class="cd-num">${h}</div><div class="cd-label">Hrs</div></div>
-            <div class="cd-block"><div class="cd-num">${m}</div><div class="cd-label">Min</div></div>
-            <div class="cd-block"><div class="cd-num">${s}</div><div class="cd-label">Sec</div></div>
-          </div>
         </div>
         <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
           <div style="background:var(--card2);padding:10px 14px;font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);">
@@ -661,18 +652,25 @@ async function loadLeaderboard() {
       return `<div class="lb-group-team ${cls}"><span class="medal">${medal}</span>${img}<span>${name}</span></div>`;
     };
 
-    // ── Points calculation ───────────────────────────────────────
-    // Fill in RESULTS once the tournament starts:
-    // e.g. RESULTS['Group A'] = { first: 'Mexico', second: 'South Korea', third: 'Czechia' }
-    const RESULTS = {};
+    // ── Fetch results from sheet ─────────────────────────────────
+    let RESULTS = {};
+    try {
+      const rRes = await fetch(SCRIPT_URL + '?action=results');
+      const rRows = await rRes.json();
+      rRows.slice(1).forEach(r => {
+        if (r[0]) RESULTS[r[0]] = { first: r[1] || '', second: r[2] || '', third: r[3] || '' };
+      });
+    } catch(e) { /* results not available yet */ }
+
+    // ── Points calculation (2pt correct 1st, 1pt correct 2nd, 0.5pt correct 3rd) ──
     const calcPoints = (row) => {
       let pts = 0;
       GROUPS.forEach((group, gi) => {
         const r = RESULTS[group.name];
         if (!r) return;
-        if (row[2 + gi*2] === r.first)  pts += 3;
-        if (row[3 + gi*2] === r.second) pts += 2;
-        for (let k = 26; k <= 33; k++) { if (row[k] === r.third) pts += 1; }
+        if (r.first  && row[2 + gi*2] === r.first)  pts += 2;
+        if (r.second && row[3 + gi*2] === r.second) pts += 1;
+        if (r.third) { for (let k = 26; k <= 33; k++) { if (row[k] === r.third) pts += 0.5; } }
       });
       return pts;
     };
@@ -717,7 +715,7 @@ async function loadLeaderboard() {
         <tr class="lb-row" onclick="toggleExpand('${uid}')">
           <td class="lb-rank ${rank <= 3 ? 'top' : ''}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</td>
           <td class="lb-uname">${name}</td>
-          <td class="lb-pts">${pts}<span>pts</span></td>
+          <td class="lb-pts">${pts % 1 === 0 ? pts : pts.toFixed(1)}<span>pts</span></td>
           <td class="lb-chevron">▼</td>
         </tr>
         <tr class="lb-expand-row" id="${uid}">
@@ -782,9 +780,66 @@ function startCountdown() {
   setInterval(tick, 1000);
 }
 
+/* ===== IP / RETURNING USER ===== */
+let userIP = null;
+let isReturning = false;
+
+async function initUser() {
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json');
+    const ipData = await ipRes.json();
+    userIP = ipData.ip;
+
+    if (SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') return;
+
+    const checkRes = await fetch(SCRIPT_URL + '?action=check&ip=' + encodeURIComponent(userIP));
+    const checkData = await checkRes.json();
+
+    if (checkData.found) {
+      isReturning = true;
+      const d = checkData.data;
+
+      // Lock name field
+      const nameInput = document.getElementById('player-name');
+      nameInput.value = d['Name'] || '';
+      nameInput.readOnly = true;
+      nameInput.style.opacity = '0.6';
+      nameInput.style.cursor = 'not-allowed';
+      nameInput.title = 'Your name is locked to your entry';
+
+      // Pre-fill group picks
+      GROUPS.forEach((group, gi) => {
+        const first  = d[`${group.name} 1st`] || '';
+        const second = d[`${group.name} 2nd`] || '';
+        group.teams.forEach((team, ti) => {
+          if (team.name === first)  picks[gi].first  = ti;
+          if (team.name === second) picks[gi].second = ti;
+        });
+      });
+
+      // Pre-fill 3rd place picks
+      const teamKeyMap = {};
+      GROUPS.forEach((g, gi) => g.teams.forEach((t, ti) => { teamKeyMap[t.name] = `${gi}-${ti}`; }));
+      for (let k = 1; k <= 8; k++) {
+        const t = d[`3rd Place Pick ${k}`];
+        if (t && teamKeyMap[t]) thirdPicks.add(teamKeyMap[t]);
+      }
+
+      // Update button text
+      document.getElementById('submit-btn').textContent = 'Update Picks →';
+      document.getElementById('third-submit-btn').textContent = 'Update All Picks →';
+
+      renderGroups();
+    }
+  } catch(err) {
+    console.warn('Could not check user IP:', err);
+  }
+}
+
 /* ===== INIT ===== */
 renderGroups();
 applyDeadlineState();
+initUser();
 </script>
 </body>
 </html>
