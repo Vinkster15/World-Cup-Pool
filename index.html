@@ -928,8 +928,10 @@ async function handleSignUp() {
       errEl.textContent = 'That email is already registered. Use "Edit My Picks" to log in.';
     } else if (data.error) {
       errEl.textContent = 'Error: ' + data.error;
-    } else {
+    } else if (data.success) {
       loginSuccess({ name, email, pin }, null, true);
+    } else {
+      errEl.textContent = 'Registration failed — unexpected response. Please try again.';
     }
   } catch(e) {
     errEl.textContent = 'Error: ' + e.message;
