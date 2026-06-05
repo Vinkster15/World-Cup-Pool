@@ -151,7 +151,7 @@
   }
   .check-circle svg { display: none; }
   .team-row.selected .check-circle svg { display: block; }
-  .flag { font-size: 1.4rem; line-height: 1; }
+  .flag { width: 28px; height: 20px; object-fit: cover; border-radius: 2px; flex-shrink: 0; }
   .team-name { font-size: 0.9rem; flex: 1; }
   .rank-badge {
     font-size: 0.65rem;
@@ -254,7 +254,7 @@
     border-bottom: 1px solid rgba(42,53,80,0.5);
   }
   .result-team:last-child { border-bottom: none; }
-  .result-team .flag { font-size: 1.4rem; }
+  .result-team .flag { width: 28px; height: 20px; object-fit: cover; border-radius: 2px; }
   .result-team .team-name { flex: 1; font-size: 0.9rem; }
   .advancing-badge {
     font-size: 0.7rem;
@@ -321,113 +321,115 @@
 </div>
 
 <script>
+const FLAG = code => `<img class="flag" src="https://flagcdn.com/w40/${code}.png" alt="${code}">`;
+
 const GROUPS = [
   {
     name: "Group A",
     teams: [
-      { name: "Mexico",               flag: "🇲🇽" },
-      { name: "South Africa",         flag: "🇿🇦" },
-      { name: "South Korea",          flag: "🇰🇷" },
-      { name: "Czechia",              flag: "🇨🇿" },
+      { name: "Mexico",               code: "mx" },
+      { name: "South Africa",         code: "za" },
+      { name: "South Korea",          code: "kr" },
+      { name: "Czechia",              code: "cz" },
     ]
   },
   {
     name: "Group B",
     teams: [
-      { name: "Canada",               flag: "🇨🇦" },
-      { name: "Bosnia & Herzegovina", flag: "🇧🇦" },
-      { name: "Qatar",                flag: "🇶🇦" },
-      { name: "Switzerland",          flag: "🇨🇭" },
+      { name: "Canada",               code: "ca" },
+      { name: "Bosnia & Herzegovina", code: "ba" },
+      { name: "Qatar",                code: "qa" },
+      { name: "Switzerland",          code: "ch" },
     ]
   },
   {
     name: "Group C",
     teams: [
-      { name: "Brazil",               flag: "🇧🇷" },
-      { name: "Morocco",              flag: "🇲🇦" },
-      { name: "Haiti",                flag: "🇭🇹" },
-      { name: "Scotland",             flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+      { name: "Brazil",               code: "br" },
+      { name: "Morocco",              code: "ma" },
+      { name: "Haiti",                code: "ht" },
+      { name: "Scotland",             code: "gb-sct" },
     ]
   },
   {
     name: "Group D",
     teams: [
-      { name: "United States",        flag: "🇺🇸" },
-      { name: "Paraguay",             flag: "🇵🇾" },
-      { name: "Australia",            flag: "🇦🇺" },
-      { name: "Turkey",               flag: "🇹🇷" },
+      { name: "United States",        code: "us" },
+      { name: "Paraguay",             code: "py" },
+      { name: "Australia",            code: "au" },
+      { name: "Turkey",               code: "tr" },
     ]
   },
   {
     name: "Group E",
     teams: [
-      { name: "Germany",              flag: "🇩🇪" },
-      { name: "Curaçao",              flag: "🇨🇼" },
-      { name: "Ivory Coast",          flag: "🇨🇮" },
-      { name: "Ecuador",              flag: "🇪🇨" },
+      { name: "Germany",              code: "de" },
+      { name: "Curaçao",              code: "cw" },
+      { name: "Ivory Coast",          code: "ci" },
+      { name: "Ecuador",              code: "ec" },
     ]
   },
   {
     name: "Group F",
     teams: [
-      { name: "Netherlands",          flag: "🇳🇱" },
-      { name: "Japan",                flag: "🇯🇵" },
-      { name: "Sweden",               flag: "🇸🇪" },
-      { name: "Tunisia",              flag: "🇹🇳" },
+      { name: "Netherlands",          code: "nl" },
+      { name: "Japan",                code: "jp" },
+      { name: "Sweden",               code: "se" },
+      { name: "Tunisia",              code: "tn" },
     ]
   },
   {
     name: "Group G",
     teams: [
-      { name: "Belgium",              flag: "🇧🇪" },
-      { name: "Egypt",                flag: "🇪🇬" },
-      { name: "Iran",                 flag: "🇮🇷" },
-      { name: "New Zealand",          flag: "🇳🇿" },
+      { name: "Belgium",              code: "be" },
+      { name: "Egypt",                code: "eg" },
+      { name: "Iran",                 code: "ir" },
+      { name: "New Zealand",          code: "nz" },
     ]
   },
   {
     name: "Group H",
     teams: [
-      { name: "Spain",                flag: "🇪🇸" },
-      { name: "Cape Verde",           flag: "🇨🇻" },
-      { name: "Saudi Arabia",         flag: "🇸🇦" },
-      { name: "Uruguay",              flag: "🇺🇾" },
+      { name: "Spain",                code: "es" },
+      { name: "Cape Verde",           code: "cv" },
+      { name: "Saudi Arabia",         code: "sa" },
+      { name: "Uruguay",              code: "uy" },
     ]
   },
   {
     name: "Group I",
     teams: [
-      { name: "France",               flag: "🇫🇷" },
-      { name: "Senegal",              flag: "🇸🇳" },
-      { name: "Iraq",                 flag: "🇮🇶" },
-      { name: "Norway",               flag: "🇳🇴" },
+      { name: "France",               code: "fr" },
+      { name: "Senegal",              code: "sn" },
+      { name: "Iraq",                 code: "iq" },
+      { name: "Norway",               code: "no" },
     ]
   },
   {
     name: "Group J",
     teams: [
-      { name: "Argentina",            flag: "🇦🇷" },
-      { name: "Algeria",              flag: "🇩🇿" },
-      { name: "Austria",              flag: "🇦🇹" },
-      { name: "Jordan",               flag: "🇯🇴" },
+      { name: "Argentina",            code: "ar" },
+      { name: "Algeria",              code: "dz" },
+      { name: "Austria",              code: "at" },
+      { name: "Jordan",               code: "jo" },
     ]
   },
   {
     name: "Group K",
     teams: [
-      { name: "Portugal",             flag: "🇵🇹" },
-      { name: "DR Congo",             flag: "🇨🇩" },
-      { name: "Uzbekistan",           flag: "🇺🇿" },
-      { name: "Colombia",             flag: "🇨🇴" },
+      { name: "Portugal",             code: "pt" },
+      { name: "DR Congo",             code: "cd" },
+      { name: "Uzbekistan",           code: "uz" },
+      { name: "Colombia",             code: "co" },
     ]
   },
   {
     name: "Group L",
     teams: [
-      { name: "England",              flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-      { name: "Croatia",              flag: "🇭🇷" },
-      { name: "Ghana",                flag: "🇬🇭" },
-      { name: "Panama",               flag: "🇵🇦" },
+      { name: "England",              code: "gb-eng" },
+      { name: "Croatia",              code: "hr" },
+      { name: "Ghana",                code: "gh" },
+      { name: "Panama",               code: "pa" },
     ]
   }
 ];
@@ -471,7 +473,7 @@ function renderGroups() {
             <path d="M1 4L3.5 6.5L9 1" stroke="#0a0e1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <span class="flag">${team.flag}</span>
+        ${FLAG(team.code)}
         <span class="team-name">${team.name}</span>`;
 
       if (!isDisabled) {
@@ -529,7 +531,7 @@ function showResults() {
       const row = document.createElement('div');
       row.className = 'result-team';
       row.innerHTML = `
-        <span class="flag">${team.flag}</span>
+        ${FLAG(team.code)}
         <span class="team-name">${team.name}</span>
         ${advancing
           ? '<span class="advancing-badge">✓ Advancing</span>'
