@@ -154,6 +154,18 @@
   .lb-empty { text-align: center; color: var(--muted); padding: 60px 0; font-size: 0.9rem; }
   .lb-loading { text-align: center; color: var(--muted); padding: 60px 0; }
   .refresh-btn { float: right; }
+
+  /* LOCKED / COUNTDOWN */
+  .locked-banner { background: rgba(201,162,39,0.08); border: 1px solid rgba(201,162,39,0.25); border-radius: 10px; padding: 20px 24px; margin-bottom: 28px; text-align: center; }
+  .locked-banner h3 { color: var(--accent2); font-size: 1.1rem; margin-bottom: 8px; }
+  .locked-banner p { color: var(--muted); font-size: 0.88rem; }
+  .countdown { display: flex; justify-content: center; gap: 16px; margin-top: 14px; }
+  .cd-block { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 64px; }
+  .cd-num { font-size: 1.6rem; font-weight: 800; color: var(--accent2); line-height: 1; }
+  .cd-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .picks-locked-overlay { text-align: center; padding: 60px 20px; }
+  .picks-locked-overlay h2 { font-size: 1.5rem; font-weight: 800; color: var(--accent2); margin-bottom: 10px; }
+  .picks-locked-overlay p { color: var(--muted); font-size: 0.95rem; }
 </style>
 </head>
 <body>
@@ -163,6 +175,9 @@
 <!-- ============================================================ -->
 <script>
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyc9SPVujO8iIN6yBYEPFhpXvMoW6dNuBDBOMMx71G3_5RYCDREpag7HJTaKF3WVVWJw/exec';
+  // June 11, 2026 3:00pm ET = 19:00 UTC (EDT = UTC-4)
+  const DEADLINE = new Date('2026-06-11T19:00:00Z');
+  const isPastDeadline = () => new Date() >= DEADLINE;
 </script>
 
 <div class="toast" id="toast">✓ Picks submitted!</div>
@@ -180,11 +195,21 @@
   <div id="game-screen">
     <header>
       <h1>⚽ Vinkster's World Cup Pool</h1>
-      <p>Pick <strong style="color:var(--accent2)">1st & 2nd place</strong> from each of the 12 groups</p>
-      <div class="progress-bar-wrap">
+      <p id="header-sub">Pick <strong style="color:var(--accent2)">1st & 2nd place</strong> from each of the 12 groups</p>
+      <div class="progress-bar-wrap" id="progress-wrap">
         <div class="progress-bar-fill" id="progress-bar"></div>
       </div>
       <div class="progress-label" id="progress-label">0 of 12 groups complete</div>
+      <!-- Countdown (shown before deadline) -->
+      <div id="countdown-wrap" style="margin-top:14px;display:none;">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;">Picks lock in:</div>
+        <div class="countdown">
+          <div class="cd-block"><div class="cd-num" id="cd-d">00</div><div class="cd-label">Days</div></div>
+          <div class="cd-block"><div class="cd-num" id="cd-h">00</div><div class="cd-label">Hrs</div></div>
+          <div class="cd-block"><div class="cd-num" id="cd-m">00</div><div class="cd-label">Min</div></div>
+          <div class="cd-block"><div class="cd-num" id="cd-s">00</div><div class="cd-label">Sec</div></div>
+        </div>
+      </div>
     </header>
     <main>
       <div class="groups-grid" id="groups-grid"></div>
@@ -232,6 +257,9 @@
   <div class="leaderboard-wrap">
     <h2>🏆 Leaderboard <button class="btn btn-ghost refresh-btn" style="font-size:0.8rem;padding:6px 14px;" onclick="loadLeaderboard()">↻ Refresh</button></h2>
     <p class="sub">All submitted picks — scoring unlocks when match results come in</p>
+    <div style="background:rgba(201,162,39,0.07);border:1px solid rgba(201,162,39,0.2);border-radius:8px;padding:12px 16px;margin-bottom:20px;text-align:center;font-size:0.88rem;color:var(--muted);">
+      ⚽ Leaderboard will populate once the 1st game begins
+    </div>
     <div id="lb-content"><div class="lb-loading">Loading submissions…</div></div>
   </div>
 </div>
@@ -488,19 +516,45 @@ function goBack() {
   document.getElementById('third-screen').style.display = 'block';
 }
 
+/* ===== MOCK DATA (remove before going live) ===== */
+const MOCK_ROWS = [
+  ['Timestamp','Name','Group A 1st','Group A 2nd','Group B 1st','Group B 2nd','Group C 1st','Group C 2nd','Group D 1st','Group D 2nd','Group E 1st','Group E 2nd','Group F 1st','Group F 2nd','Group G 1st','Group G 2nd','Group H 1st','Group H 2nd','Group I 1st','Group I 2nd','Group J 1st','Group J 2nd','Group K 1st','Group K 2nd','Group L 1st','Group L 2nd','3rd Place Pick 1','3rd Place Pick 2','3rd Place Pick 3','3rd Place Pick 4','3rd Place Pick 5','3rd Place Pick 6','3rd Place Pick 7','3rd Place Pick 8'],
+  ['2026-06-10T14:22:00Z','Dustin','Mexico','South Korea','Canada','Switzerland','Brazil','Morocco','United States','Australia','Germany','Ecuador','Netherlands','Japan','Belgium','Egypt','Spain','Uruguay','France','Senegal','Argentina','Austria','Portugal','Colombia','England','Croatia','Czechia','Qatar','Haiti','Turkey','Ivory Coast','Sweden','Jordan','Ghana'],
+  ['2026-06-10T15:05:00Z','Tyler','South Africa','Mexico','Canada','Qatar','Brazil','Scotland','United States','Turkey','Germany','Ivory Coast','Netherlands','Sweden','Belgium','Iran','Spain','Saudi Arabia','France','Iraq','Argentina','Algeria','Portugal','DR Congo','England','Ghana','Switzerland','Morocco','Australia','Ecuador','Japan','Egypt','Uruguay','Croatia'],
+  ['2026-06-10T16:44:00Z','Sarah','Mexico','Czechia','Switzerland','Bosnia & Herzegovina','Brazil','Haiti','United States','Paraguay','Germany','Curaçao','Netherlands','Tunisia','Belgium','New Zealand','Spain','Cape Verde','France','Norway','Argentina','Jordan','Portugal','Uzbekistan','England','Panama','South Korea','Canada','Morocco','Australia','Ivory Coast','Japan','Saudi Arabia','Algeria'],
+  ['2026-06-10T18:11:00Z','Mike','Mexico','South Africa','Canada','Switzerland','Morocco','Brazil','United States','Australia','Germany','Ecuador','Japan','Netherlands','Egypt','Belgium','Uruguay','Spain','Senegal','France','Argentina','Austria','Colombia','Portugal','Croatia','England','South Korea','Qatar','Scotland','Turkey','Sweden','Iran','Algeria','Panama'],
+  ['2026-06-11T09:30:00Z','Jess','South Korea','Mexico','Canada','Switzerland','Brazil','Morocco','United States','Turkey','Ecuador','Germany','Netherlands','Japan','Belgium','Egypt','Spain','Uruguay','France','Senegal','Argentina','Algeria','Portugal','Colombia','England','Croatia','Czechia','Switzerland','Haiti','Australia','Sweden','Jordan','Ghana','Panama'],
+];
+
 /* ===== LEADERBOARD ===== */
 async function loadLeaderboard() {
   const el = document.getElementById('lb-content');
-  el.innerHTML = '<div class="lb-loading">Loading submissions…</div>';
 
-  if (SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') {
-    el.innerHTML = `<div class="lb-empty">⚙️ Google Sheets not connected yet.<br>Follow the setup instructions to enable the leaderboard.</div>`;
+  if (false && !isPastDeadline()) { // MOCK MODE: deadline check disabled
+    const diff = DEADLINE - new Date();
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    el.innerHTML = `
+      <div class="locked-banner">
+        <h3>🔒 Leaderboard Reveals June 11, 2026 at 3:00pm ET</h3>
+        <p>All picks are hidden until the deadline passes. Check back then to see how everyone did!</p>
+        <div class="countdown" style="margin-top:14px;">
+          <div class="cd-block"><div class="cd-num">${d}</div><div class="cd-label">Days</div></div>
+          <div class="cd-block"><div class="cd-num">${h}</div><div class="cd-label">Hrs</div></div>
+          <div class="cd-block"><div class="cd-num">${m}</div><div class="cd-label">Min</div></div>
+        </div>
+      </div>`;
     return;
   }
 
+  el.innerHTML = '<div class="lb-loading">Loading submissions…</div>';
+
   try {
-    const res = await fetch(SCRIPT_URL + '?action=get');
-    const rows = await res.json();
+    // MOCK MODE — replace with real fetch when ready:
+    // const res = await fetch(SCRIPT_URL + '?action=get');
+    // const rows = await res.json();
+    const rows = MOCK_ROWS;
 
     if (!rows || rows.length < 2) {
       el.innerHTML = '<div class="lb-empty">No submissions yet — be the first!</div>';
@@ -541,8 +595,48 @@ async function loadLeaderboard() {
   }
 }
 
+/* ===== DEADLINE / LOCK ===== */
+function applyDeadlineState() {
+  if (isPastDeadline()) {
+    // Lock the picks screen
+    document.getElementById('progress-wrap').style.display = 'none';
+    document.getElementById('progress-label').style.display = 'none';
+    document.getElementById('countdown-wrap').style.display = 'none';
+    document.getElementById('header-sub').innerHTML = '<strong style="color:#e74c3c;">⛔ Picks are locked — deadline has passed</strong>';
+    document.querySelector('.sticky-footer').style.display = 'none';
+    // Disable all seed buttons
+    document.querySelectorAll('.seed-btn').forEach(b => b.disabled = true);
+    document.querySelectorAll('.third-card').forEach(c => {
+      c.classList.add('disabled');
+      c.style.pointerEvents = 'none';
+    });
+  } else {
+    // Show countdown
+    document.getElementById('countdown-wrap').style.display = 'block';
+    startCountdown();
+  }
+}
+
+function startCountdown() {
+  function tick() {
+    const diff = DEADLINE - new Date();
+    if (diff <= 0) { location.reload(); return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-d').textContent = String(d).padStart(2,'0');
+    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
 /* ===== INIT ===== */
 renderGroups();
+applyDeadlineState();
 </script>
 </body>
 </html>
