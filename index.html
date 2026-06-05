@@ -99,6 +99,24 @@
   .screen { display: none; }
   .screen.active { display: block; }
 
+  /* THIRD PLACE SCREEN */
+  .third-header { text-align:center; padding:36px 20px 20px; background:linear-gradient(135deg,#0d1b3e 0%,#1a3a6e 50%,#0d1b3e 100%); border-bottom:2px solid var(--accent); }
+  .third-header h2 { font-size:1.8rem; font-weight:800; color:var(--accent2); }
+  .third-header p { color:var(--muted); margin-top:6px; font-size:0.95rem; }
+  .third-counter { display:inline-block; margin-top:12px; background:var(--card2); border:1px solid var(--border); border-radius:20px; padding:5px 18px; font-size:0.85rem; color:var(--muted); }
+  .third-counter strong { color:var(--accent2); }
+  .third-grid { max-width:900px; margin:32px auto; padding:0 16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+  .third-card { background:var(--card); border:1px solid var(--border); border-radius:10px; display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; transition:all 0.15s; user-select:none; }
+  .third-card:hover { background:var(--card2); border-color:var(--muted); }
+  .third-card.selected { background:rgba(39,174,96,0.1); border-color:#27ae60; }
+  .third-card.selected .third-team-name { color:#2ecc71; font-weight:600; }
+  .third-card.disabled { opacity:0.35; cursor:not-allowed; }
+  .third-card.disabled:hover { background:var(--card); border-color:var(--border); }
+  .third-team-name { font-size:0.88rem; flex:1; }
+  .third-group-label { font-size:0.68rem; color:var(--muted); background:var(--bg); border-radius:4px; padding:2px 5px; }
+  .third-check { width:18px; height:18px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+  .third-card.selected .third-check { background:#27ae60; border-color:#27ae60; }
+
   /* RESULTS */
   .results-hero { text-align: center; padding: 40px 20px 24px; background: linear-gradient(135deg, #0d1b3e 0%, #1a3a6e 50%, #0d1b3e 100%); border-bottom: 2px solid var(--accent); }
   .results-hero h2 { font-size: 1.8rem; font-weight: 800; color: var(--accent2); }
@@ -177,6 +195,20 @@
       <button class="btn btn-primary" id="submit-btn" disabled onclick="handleSubmit()">
         Submit Picks →
       </button>
+    </div>
+  </div>
+
+  <!-- THIRD PLACE SCREEN -->
+  <div id="third-screen" style="display:none;">
+    <div class="third-header">
+      <h2>🥉 Pick Your Third-Place Qualifiers</h2>
+      <p>Choose <strong style="color:var(--accent2)">8 teams</strong> from the 24 eliminated teams to advance as 3rd-place finishers</p>
+      <div class="third-counter">Selected: <strong id="third-count">0</strong> / 8</div>
+    </div>
+    <div class="third-grid" id="third-grid"></div>
+    <div style="text-align:center;padding:0 0 40px;display:flex;gap:12px;justify-content:center;">
+      <button class="btn btn-ghost" onclick="backToGroups()">← Back to Groups</button>
+      <button class="btn btn-primary" id="third-submit-btn" disabled onclick="handleFinalSubmit()">Submit All Picks →</button>
     </div>
   </div>
 
@@ -306,12 +338,78 @@ function updateProgress() {
 
 document.getElementById('player-name').addEventListener('input', updateProgress);
 
-/* ===== SUBMIT ===== */
-async function handleSubmit() {
+/* ===== THIRD PLACE STATE ===== */
+const thirdPicks = new Set(); // stores {groupIndex}-{teamIndex} keys
+
+function getEliminatedTeams() {
+  const eliminated = [];
+  GROUPS.forEach((group, gi) => {
+    group.teams.forEach((team, ti) => {
+      if (picks[gi].first !== ti && picks[gi].second !== ti) {
+        eliminated.push({ team, gi, ti, key: `${gi}-${ti}` });
+      }
+    });
+  });
+  return eliminated;
+}
+
+function showThirdScreen() {
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('third-screen').style.display = 'block';
+  thirdPicks.clear();
+  renderThirdGrid();
+  window.scrollTo(0, 0);
+}
+
+function backToGroups() {
+  document.getElementById('third-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+}
+
+function renderThirdGrid() {
+  const grid = document.getElementById('third-grid');
+  grid.innerHTML = '';
+  const eliminated = getEliminatedTeams();
+  const full = thirdPicks.size >= 8;
+
+  eliminated.forEach(({ team, gi, key }) => {
+    const selected = thirdPicks.has(key);
+    const disabled = !selected && full;
+    const card = document.createElement('div');
+    card.className = 'third-card' + (selected ? ' selected' : '') + (disabled ? ' disabled' : '');
+    card.innerHTML = `
+      <div class="third-check">
+        ${selected ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+      </div>
+      ${FLAG(team.code)}
+      <span class="third-team-name">${team.name}</span>
+      <span class="third-group-label">Grp ${String.fromCharCode(65 + gi)}</span>`;
+    if (!disabled) {
+      card.addEventListener('click', () => {
+        if (thirdPicks.has(key)) thirdPicks.delete(key);
+        else if (thirdPicks.size < 8) thirdPicks.add(key);
+        renderThirdGrid();
+      });
+    }
+    grid.appendChild(card);
+  });
+
+  document.getElementById('third-count').textContent = thirdPicks.size;
+  document.getElementById('third-submit-btn').disabled = thirdPicks.size !== 8;
+}
+
+/* ===== SUBMIT GROUP PICKS → GO TO THIRD SCREEN ===== */
+function handleSubmit() {
   const name = document.getElementById('player-name').value.trim();
   if (!name) return;
+  showThirdScreen();
+}
 
-  const payload = { name, timestamp: new Date().toISOString(), picks: {} };
+/* ===== FINAL SUBMIT (groups + third place) ===== */
+async function handleFinalSubmit() {
+  const name = document.getElementById('player-name').value.trim();
+
+  const payload = { name, timestamp: new Date().toISOString(), picks: {}, thirdPlace: [] };
   GROUPS.forEach((group, gi) => {
     payload.picks[group.name] = {
       first:  GROUPS[gi].teams[picks[gi].first].name,
@@ -319,17 +417,21 @@ async function handleSubmit() {
     };
   });
 
-  // Submit to Google Sheets
+  const eliminated = getEliminatedTeams();
+  eliminated.forEach(({ team, key }) => {
+    if (thirdPicks.has(key)) payload.thirdPlace.push(team.name);
+  });
+
   if (SCRIPT_URL !== 'YOUR_SCRIPT_URL_HERE') {
     try {
       const submitUrl = SCRIPT_URL + '?action=submit&data=' + encodeURIComponent(JSON.stringify(payload));
-    await fetch(submitUrl);
+      await fetch(submitUrl);
     } catch (e) {
       console.warn('Sheet submit failed:', e);
     }
   }
 
-  showToast('✓ Picks submitted!');
+  showToast('✓ All picks submitted!');
   showResults(name);
 }
 
@@ -342,12 +444,18 @@ function showToast(msg) {
 
 /* ===== RESULTS ===== */
 function showResults(name) {
-  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('third-screen').style.display = 'none';
   document.getElementById('results-screen').style.display = 'block';
-  document.getElementById('results-name-label').textContent = `${name}'s predictions — 24 teams advancing`;
+  document.getElementById('results-name-label').textContent = `${name}'s predictions — 32 teams advancing`;
 
   const grid = document.getElementById('results-grid');
   grid.innerHTML = '';
+
+  // Build third-place set for quick lookup
+  const eliminated = getEliminatedTeams();
+  const thirdNames = new Set();
+  eliminated.forEach(({ team, key }) => { if (thirdPicks.has(key)) thirdNames.add(team.name); });
+
   GROUPS.forEach((group, gi) => {
     const p = picks[gi];
     const card = document.createElement('div');
@@ -355,6 +463,7 @@ function showResults(name) {
     card.innerHTML = `<div class="result-card-header">${group.name}</div>`;
     group.teams.forEach((team, ti) => {
       const isFirst = p.first === ti, isSecond = p.second === ti;
+      const isThird = thirdNames.has(team.name);
       const row = document.createElement('div');
       row.className = 'result-team';
       row.innerHTML = `
@@ -362,6 +471,7 @@ function showResults(name) {
         <span class="team-name">${team.name}</span>
         ${isFirst  ? '<span class="advancing-badge">🥇 1st Place</span>'
         : isSecond ? '<span class="second-badge">🥈 2nd Place</span>'
+        : isThird  ? '<span class="advancing-badge" style="background:rgba(205,127,50,0.2);color:#cd7f32;">🥉 3rd Place</span>'
                    : '<span class="eliminated-badge">Eliminated</span>'}`;
       card.appendChild(row);
     });
@@ -369,13 +479,13 @@ function showResults(name) {
   });
 
   document.getElementById('summary-bar').innerHTML =
-    `<p>You've picked <strong>24 teams</strong> to advance from the group stage. Good luck!</p>`;
+    `<p>You've picked <strong>32 teams</strong> to advance — 24 group qualifiers + 8 third-place finishers. Good luck!</p>`;
   window.scrollTo(0, 0);
 }
 
 function goBack() {
   document.getElementById('results-screen').style.display = 'none';
-  document.getElementById('game-screen').style.display = 'block';
+  document.getElementById('third-screen').style.display = 'block';
 }
 
 /* ===== LEADERBOARD ===== */
