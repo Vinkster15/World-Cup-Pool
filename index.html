@@ -195,7 +195,7 @@
   /* AUTH MODAL */
   .auth-modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
   .auth-modal-bg.hidden { display: none; }
-  .auth-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 420px; padding: 28px; }
+  .auth-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 420px; padding: 28px; margin: 32px auto; }
   .auth-modal-title { font-size: 1.2rem; font-weight: 800; color: var(--accent2); margin-bottom: 4px; }
   .auth-modal-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; }
   .auth-tabs { display: flex; background: var(--card2); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
@@ -239,62 +239,64 @@
   <button class="nav-tab" onclick="showTab('rules')">📜 Rules & Payment</button>
 </nav>
 
-<!-- AUTH MODAL (sits outside tabs, overlays everything) -->
-<div class="auth-modal-bg hidden" id="auth-modal">
-  <div class="auth-wrap">
-    <div class="auth-modal-title">⚽ Almost there!</div>
-    <div class="auth-modal-sub">Create an account or log in to save your picks.</div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">New Entry</button>
-      <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Edit My Picks</button>
-    </div>
-
-    <!-- SIGN UP -->
-    <div id="auth-signup-form">
-      <div class="auth-field">
-        <label>Your Name</label>
-        <input class="auth-input" id="su-name" type="text" placeholder="First & last name" maxlength="40">
-      </div>
-      <div class="auth-field">
-        <label>Email Address</label>
-        <input class="auth-input" id="su-email" type="email" placeholder="you@example.com">
-      </div>
-      <div class="auth-field">
-        <label>Choose a 4-Digit PIN</label>
-        <div class="pin-row">
-          <input class="pin-digit" id="su-p1" type="number" min="0" max="9">
-          <input class="pin-digit" id="su-p2" type="number" min="0" max="9">
-          <input class="pin-digit" id="su-p3" type="number" min="0" max="9">
-          <input class="pin-digit" id="su-p4" type="number" min="0" max="9">
-        </div>
-      </div>
-      <div class="auth-error" id="su-error"></div>
-      <button class="auth-btn" id="su-btn" onclick="handleSignUp()">Create Account & Submit →</button>
-    </div>
-
-    <!-- LOG IN -->
-    <div id="auth-login-form" style="display:none;">
-      <div class="auth-field">
-        <label>Email Address</label>
-        <input class="auth-input" id="li-email" type="email" placeholder="you@example.com">
-      </div>
-      <div class="auth-field">
-        <label>Your 4-Digit PIN</label>
-        <div class="pin-row">
-          <input class="pin-digit" id="li-p1" type="number" min="0" max="9">
-          <input class="pin-digit" id="li-p2" type="number" min="0" max="9">
-          <input class="pin-digit" id="li-p3" type="number" min="0" max="9">
-          <input class="pin-digit" id="li-p4" type="number" min="0" max="9">
-        </div>
-      </div>
-      <div class="auth-error" id="li-error"></div>
-      <button class="auth-btn" id="li-btn" onclick="handleLogin()">Log In & Submit →</button>
-    </div>
-  </div>
-</div>
-
 <!-- ===== PICKS TAB ===== -->
 <div id="tab-picks" class="screen active">
+
+  <!-- AUTH SCREEN (shown first) -->
+  <div id="auth-screen">
+    <header>
+      <h1>⚽ Vinkster's World Cup Pool</h1>
+      <p style="color:var(--muted);margin-top:6px;font-size:0.95rem;">Sign up to enter your picks, or log in to edit them</p>
+    </header>
+    <div class="auth-wrap">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">New Entry</button>
+        <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Edit My Picks</button>
+      </div>
+
+      <!-- SIGN UP -->
+      <div id="auth-signup-form">
+        <div class="auth-field">
+          <label>Your Name</label>
+          <input class="auth-input" id="su-name" type="text" placeholder="First & last name" maxlength="40">
+        </div>
+        <div class="auth-field">
+          <label>Email Address</label>
+          <input class="auth-input" id="su-email" type="email" placeholder="you@example.com">
+        </div>
+        <div class="auth-field">
+          <label>Choose a 4-Digit PIN</label>
+          <div class="pin-row">
+            <input class="pin-digit" id="su-p1" type="number" min="0" max="9">
+            <input class="pin-digit" id="su-p2" type="number" min="0" max="9">
+            <input class="pin-digit" id="su-p3" type="number" min="0" max="9">
+            <input class="pin-digit" id="su-p4" type="number" min="0" max="9">
+          </div>
+        </div>
+        <div class="auth-error" id="su-error"></div>
+        <button class="auth-btn" id="su-btn" onclick="handleSignUp()">Create Account →</button>
+      </div>
+
+      <!-- LOG IN -->
+      <div id="auth-login-form" style="display:none;">
+        <div class="auth-field">
+          <label>Email Address</label>
+          <input class="auth-input" id="li-email" type="email" placeholder="you@example.com">
+        </div>
+        <div class="auth-field">
+          <label>Your 4-Digit PIN</label>
+          <div class="pin-row">
+            <input class="pin-digit" id="li-p1" type="number" min="0" max="9">
+            <input class="pin-digit" id="li-p2" type="number" min="0" max="9">
+            <input class="pin-digit" id="li-p3" type="number" min="0" max="9">
+            <input class="pin-digit" id="li-p4" type="number" min="0" max="9">
+          </div>
+        </div>
+        <div class="auth-error" id="li-error"></div>
+        <button class="auth-btn" id="li-btn" onclick="handleLogin()">Log In →</button>
+      </div>
+    </div>
+  </div>
 
   <!-- USER BAR (shown when logged in) -->
   <div id="auth-user-bar" class="auth-user-bar" style="display:none;">
@@ -302,8 +304,8 @@
     <button class="auth-logout" onclick="handleLogout()">Log out</button>
   </div>
 
-  <!-- GAME SCREEN (shown by default) -->
-  <div id="game-screen">
+  <!-- GAME SCREEN (hidden until logged in) -->
+  <div id="game-screen" style="display:none;">
     <header>
       <h1>⚽ Vinkster's World Cup Pool</h1>
       <p id="header-sub">Pick <strong style="color:var(--accent2)">1st & 2nd place</strong> from each of the 12 groups</p>
@@ -512,7 +514,7 @@ function updateProgress() {
     : 'Ready to submit!';
 }
 
-document.getElementById('player-name').addEventListener('input', updateProgress);
+// (player-name input removed — name is collected during sign-up)
 
 /* ===== THIRD PLACE STATE ===== */
 const thirdPicks = new Set(); // stores {groupIndex}-{teamIndex} keys
@@ -574,13 +576,9 @@ function renderThirdGrid() {
   document.getElementById('third-submit-btn').disabled = thirdPicks.size !== 8;
 }
 
-/* ===== SUBMIT GROUP PICKS → AUTH MODAL OR THIRD SCREEN ===== */
+/* ===== SUBMIT GROUP PICKS → THIRD SCREEN ===== */
 function handleSubmit() {
-  if (currentUser) {
-    showThirdScreen(); // already logged in, go straight to 3rd place
-  } else {
-    document.getElementById('auth-modal').classList.remove('hidden'); // show auth modal
-  }
+  showThirdScreen();
 }
 
 /* ===== FINAL SUBMIT (groups + third place) ===== */
@@ -968,14 +966,15 @@ async function handleLogin() {
   btn.textContent = 'Log In & Submit →';
 }
 
-function loginSuccess(user, existingData, proceedToThird = false) {
+function loginSuccess(user, existingData) {
   currentUser = user;
   localStorage.setItem(LS_KEY, JSON.stringify(user));
 
-  // Close modal, show user bar
-  document.getElementById('auth-modal').classList.add('hidden');
+  // Hide auth, show game
+  document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('auth-user-bar').style.display = 'flex';
   document.getElementById('auth-username').textContent = user.name;
+  document.getElementById('game-screen').style.display = 'block';
 
   // Pre-fill picks if returning user has existing data
   if (existingData) {
@@ -999,9 +998,6 @@ function loginSuccess(user, existingData, proceedToThird = false) {
 
   renderGroups();
   applyDeadlineState();
-
-  // If coming from submit button, proceed to 3rd place screen
-  if (proceedToThird) showThirdScreen();
 }
 
 function handleLogout() {
