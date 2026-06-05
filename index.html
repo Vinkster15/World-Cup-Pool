@@ -505,11 +505,10 @@ function updateProgress() {
   const done = GROUPS.filter((_, gi) => isComplete(gi)).length;
   document.getElementById('progress-bar').style.width = (done / GROUPS.length * 100) + '%';
   document.getElementById('progress-label').textContent = `${done} of ${GROUPS.length} groups complete`;
-  const name = document.getElementById('player-name').value.trim();
   const allDone = done === GROUPS.length;
-  document.getElementById('submit-btn').disabled = !allDone || !name;
-  document.getElementById('footer-status').textContent = !name ? 'Enter your name to submit'
-    : !allDone ? `${GROUPS.length - done} group${GROUPS.length - done !== 1 ? 's' : ''} remaining`
+  document.getElementById('submit-btn').disabled = !allDone;
+  document.getElementById('footer-status').textContent = !allDone
+    ? `${GROUPS.length - done} group${GROUPS.length - done !== 1 ? 's' : ''} remaining`
     : 'Ready to submit!';
 }
 
@@ -1025,6 +1024,7 @@ async function autoLogin(user) {
 
 /* ===== INIT ===== */
 renderGroups();
+applyDeadlineState();
 setupPinInputs('su');
 setupPinInputs('li');
 
