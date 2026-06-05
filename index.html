@@ -502,7 +502,12 @@ function handleSubmit() {
 async function handleFinalSubmit() {
   const name = document.getElementById('player-name').value.trim();
 
-  const payload = { name, timestamp: new Date().toISOString(), picks: {}, thirdPlace: [], ip: userIP || '' };
+  // Generate a new SID for first-timers, reuse for returning users
+  if (!userSID) {
+    userSID = generateSID();
+    localStorage.setItem(LS_KEY, JSON.stringify({ sid: userSID }));
+  }
+  const payload = { name, timestamp: new Date().toISOString(), picks: {}, thirdPlace: [], ip: userIP || '', sid: userSID };
   GROUPS.forEach((group, gi) => {
     payload.picks[group.name] = {
       first:  GROUPS[gi].teams[picks[gi].first].name,
@@ -780,59 +785,90 @@ function startCountdown() {
   setInterval(tick, 1000);
 }
 
-/* ===== IP / RETURNING USER ===== */
-let userIP = null;
+/* ===== DUAL-LOCK: localStorage + IP ===== */
+let userIP  = null;
+let userSID = null; // submission ID stored in localStorage
 let isReturning = false;
+const LS_KEY = 'wc2026_user';
+
+function generateSID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function applyExistingPicks(d) {
+  isReturning = true;
+
+  // Lock name field
+  const nameInput = document.getElementById('player-name');
+  nameInput.value = d['Name'] || '';
+  nameInput.readOnly = true;
+  nameInput.style.opacity = '0.6';
+  nameInput.style.cursor = 'not-allowed';
+  nameInput.title = 'Your name is locked to your first entry';
+
+  // Pre-fill group picks
+  GROUPS.forEach((group, gi) => {
+    const first  = d[`${group.name} 1st`] || '';
+    const second = d[`${group.name} 2nd`] || '';
+    group.teams.forEach((team, ti) => {
+      if (team.name === first)  picks[gi].first  = ti;
+      if (team.name === second) picks[gi].second = ti;
+    });
+  });
+
+  // Pre-fill 3rd place picks
+  const teamKeyMap = {};
+  GROUPS.forEach((g, gi) => g.teams.forEach((t, ti) => { teamKeyMap[t.name] = `${gi}-${ti}`; }));
+  for (let k = 1; k <= 8; k++) {
+    const t = d[`3rd Place Pick ${k}`];
+    if (t && teamKeyMap[t]) thirdPicks.add(teamKeyMap[t]);
+  }
+
+  // Update button text
+  document.getElementById('submit-btn').textContent = 'Update Picks →';
+  document.getElementById('third-submit-btn').textContent = 'Update All Picks →';
+
+  renderGroups();
+}
 
 async function initUser() {
   try {
-    const ipRes = await fetch('https://api.ipify.org?format=json');
-    const ipData = await ipRes.json();
-    userIP = ipData.ip;
+    // Step 1: fetch IP quietly in background
+    try {
+      const ipRes = await fetch('https://api.ipify.org?format=json');
+      const ipData = await ipRes.json();
+      userIP = ipData.ip;
+    } catch(e) { /* IP unavailable, continue */ }
 
     if (SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') return;
 
-    const checkRes = await fetch(SCRIPT_URL + '?action=check&ip=' + encodeURIComponent(userIP));
-    const checkData = await checkRes.json();
+    // Step 2: check localStorage first (fastest, most reliable)
+    const stored = localStorage.getItem(LS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      userSID = parsed.sid;
+      const checkRes = await fetch(`${SCRIPT_URL}?action=check&id=${encodeURIComponent(userSID)}&ip=${encodeURIComponent(userIP || '')}`);
+      const checkData = await checkRes.json();
+      if (checkData.found) { applyExistingPicks(checkData.data); return; }
+    }
 
-    if (checkData.found) {
-      isReturning = true;
-      const d = checkData.data;
-
-      // Lock name field
-      const nameInput = document.getElementById('player-name');
-      nameInput.value = d['Name'] || '';
-      nameInput.readOnly = true;
-      nameInput.style.opacity = '0.6';
-      nameInput.style.cursor = 'not-allowed';
-      nameInput.title = 'Your name is locked to your entry';
-
-      // Pre-fill group picks
-      GROUPS.forEach((group, gi) => {
-        const first  = d[`${group.name} 1st`] || '';
-        const second = d[`${group.name} 2nd`] || '';
-        group.teams.forEach((team, ti) => {
-          if (team.name === first)  picks[gi].first  = ti;
-          if (team.name === second) picks[gi].second = ti;
-        });
-      });
-
-      // Pre-fill 3rd place picks
-      const teamKeyMap = {};
-      GROUPS.forEach((g, gi) => g.teams.forEach((t, ti) => { teamKeyMap[t.name] = `${gi}-${ti}`; }));
-      for (let k = 1; k <= 8; k++) {
-        const t = d[`3rd Place Pick ${k}`];
-        if (t && teamKeyMap[t]) thirdPicks.add(teamKeyMap[t]);
+    // Step 3: fallback — check by IP only
+    if (userIP) {
+      const checkRes = await fetch(`${SCRIPT_URL}?action=check&ip=${encodeURIComponent(userIP)}`);
+      const checkData = await checkRes.json();
+      if (checkData.found) {
+        // Sync localStorage with what the sheet has
+        const sid = checkData.data['Submission ID'] || generateSID();
+        userSID = sid;
+        localStorage.setItem(LS_KEY, JSON.stringify({ sid }));
+        applyExistingPicks(checkData.data);
       }
-
-      // Update button text
-      document.getElementById('submit-btn').textContent = 'Update Picks →';
-      document.getElementById('third-submit-btn').textContent = 'Update All Picks →';
-
-      renderGroups();
     }
   } catch(err) {
-    console.warn('Could not check user IP:', err);
+    console.warn('initUser error:', err);
   }
 }
 
