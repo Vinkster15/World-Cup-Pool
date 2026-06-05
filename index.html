@@ -144,7 +144,7 @@
 <!--  REPLACE THIS URL with your Google Apps Script deploy URL   -->
 <!-- ============================================================ -->
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxInR7mzJBrBNtP0gzHJ7cje2-sGTCskwvIVpnva_QuNE8hX7bu-V0SPUK_11SAdNRMvQ/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyc9SPVujO8iIN6yBYEPFhpXvMoW6dNuBDBOMMx71G3_5RYCDREpag7HJTaKF3WVVWJw/exec';
 </script>
 
 <div class="toast" id="toast">✓ Picks submitted!</div>
@@ -322,12 +322,8 @@ async function handleSubmit() {
   // Submit to Google Sheets
   if (SCRIPT_URL !== 'YOUR_SCRIPT_URL_HERE') {
     try {
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload),
-      });
+      const submitUrl = SCRIPT_URL + '?action=submit&data=' + encodeURIComponent(JSON.stringify(payload));
+    await fetch(submitUrl);
     } catch (e) {
       console.warn('Sheet submit failed:', e);
     }
