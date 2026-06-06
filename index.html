@@ -370,10 +370,63 @@
     <h2 style="font-size:1.4rem;font-weight:800;color:var(--accent2);margin-bottom:6px;">📜 Rules & Payment</h2>
     <p style="color:var(--muted);font-size:0.85rem;margin-bottom:28px;">Everything you need to know about the pool</p>
 
-    <!-- RULES SECTION -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px;">
-      <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);border-left:3px solid var(--accent);padding-left:10px;margin-bottom:16px;">Rules</div>
-      <p style="color:var(--muted);font-style:italic;">Rules coming soon...</p>
+    <!-- RULES SECTION (collapsible) -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;">
+      <button onclick="toggleRules()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:none;border:none;cursor:pointer;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:3px;height:16px;background:var(--accent);border-radius:2px;flex-shrink:0;"></div>
+          <span style="font-size:0.75rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);">Rules</span>
+        </div>
+        <span id="rules-chevron" style="color:var(--muted);font-size:0.85rem;transition:transform 0.2s;">▼</span>
+      </button>
+      <div id="rules-body" style="display:none;padding:0 24px 24px;">
+
+        <div style="margin-bottom:20px;">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Pool Structure</div>
+          <p style="color:var(--text);font-size:0.9rem;line-height:1.6;">There are two rounds — <strong style="color:var(--accent2);">Group Stage</strong> and <strong style="color:var(--accent2);">Bracket</strong>. This is a combo scoring contest. Group stage points + bracket points. Highest total wins.</p>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">How to Play — Group Stage</div>
+          <ul style="color:var(--text);font-size:0.9rem;line-height:1.8;padding-left:18px;">
+            <li>Select <strong style="color:var(--accent2);">1st and 2nd place</strong> finishers for each of the 12 groups</li>
+            <li>Then pick <strong style="color:var(--accent2);">8 third-place finishers</strong> you think will advance as the best 3rd-place teams</li>
+          </ul>
+        </div>
+
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Group Stage Scoring</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:0.88rem;"><span style="color:var(--text);">🥇 Correct 1st place pick</span><strong style="color:var(--accent2);">3 pts</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.88rem;"><span style="color:var(--text);">🥈 Correct 2nd place pick</span><strong style="color:var(--accent2);">2 pts</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.88rem;"><span style="color:var(--text);">🥉 Correct 3rd place pick</span><strong style="color:var(--accent2);">1 pt</strong></div>
+          </div>
+          <p style="color:var(--muted);font-size:0.78rem;margin-top:10px;">⚠️ Points only awarded if team finishes in the exact position you projected.</p>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Round Two — Bracket</div>
+          <ul style="color:var(--text);font-size:0.9rem;line-height:1.8;padding-left:18px;">
+            <li>Fill out a <strong style="color:var(--accent2);">complete bracket</strong> after the group stage concludes</li>
+            <li>Pick every round all the way to champion</li>
+            <li><strong style="color:#e74c3c;">Deadline: June 28</strong></li>
+            <li>You'll be prompted to fill your bracket out on this website once it becomes available</li>
+          </ul>
+        </div>
+
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;">
+          <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Bracket Scoring</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:0.88rem;"><span style="color:var(--text);">Round of 32</span><strong style="color:var(--accent2);">1 pt</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.88rem;"><span style="color:var(--text);">Round of 16</span><strong style="color:var(--accent2);">2 pts</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.88rem;"><span style="color:var(--text);">Round of 8</span><strong style="color:var(--accent2);">4 pts</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.88rem;"><span style="color:var(--text);">Round of 4</span><strong style="color:var(--accent2);">8 pts</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:0.88rem;"><span style="color:var(--text);">Final</span><strong style="color:var(--accent2);">16 pts</strong></div>
+          </div>
+        </div>
+
+        <p style="color:var(--muted);font-size:0.82rem;margin-top:16px;text-align:center;">Payouts will be determined by the number of entrants.</p>
+      </div>
     </div>
 
     <!-- PAYMENT SECTION -->
@@ -437,6 +490,15 @@ const GROUPS = [
 /* ===== STATE ===== */
 const picks = GROUPS.map(() => ({ first: null, second: null }));
 const isComplete = gi => picks[gi].first !== null && picks[gi].second !== null;
+
+/* ===== RULES TOGGLE ===== */
+function toggleRules() {
+  const body = document.getElementById('rules-body');
+  const chevron = document.getElementById('rules-chevron');
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  chevron.style.transform = open ? '' : 'rotate(180deg)';
+}
 
 /* ===== TABS ===== */
 function showTab(tab) {
