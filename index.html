@@ -429,30 +429,38 @@
       </div>
     </div>
 
-    <!-- PAYMENT SECTION -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;">
-      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:20px;">You can send the <strong style="color:var(--accent2);">$25 entry fee</strong> to one of the following:</p>
-
-      <div style="display:flex;flex-direction:column;gap:12px;">
-
-        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;">
-          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Venmo</div>
-          <div style="font-weight:800;font-size:1.1rem;color:var(--accent2);">@Vinkster15</div>
-          <a href="https://venmo.com/u/Vinkster15" target="_blank" style="font-size:0.8rem;color:var(--accent);margin-top:4px;display:inline-block;">Click here to pay →</a>
+    <!-- PAYMENT SECTION (collapsible) -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <button onclick="togglePayment()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:none;border:none;cursor:pointer;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:3px;height:16px;background:var(--accent);border-radius:2px;flex-shrink:0;"></div>
+          <span style="font-size:0.75rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);">Payment Options</span>
         </div>
+        <span id="payment-chevron" style="color:var(--muted);font-size:0.85rem;transition:transform 0.2s;">▼</span>
+      </button>
+      <div id="payment-body" style="display:none;padding:0 24px 24px;">
+        <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Send the <strong style="color:var(--accent2);">$25 entry fee</strong> to one of the following:</p>
+        <div style="display:flex;flex-direction:column;gap:12px;">
 
-        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;">
-          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">PayPal</div>
-          <div style="font-weight:800;font-size:1.1rem;color:var(--accent2);">dustin.vinke@yahoo.com</div>
-          <a href="https://paypal.me/dustinvinke" target="_blank" style="font-size:0.8rem;color:var(--accent);margin-top:4px;display:inline-block;">Click here to pay →</a>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;">
+            <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Venmo</div>
+            <div style="font-weight:800;font-size:1.1rem;color:var(--accent2);">@Vinkster15</div>
+            <a href="https://venmo.com/u/Vinkster15" target="_blank" style="font-size:0.8rem;color:var(--accent);margin-top:4px;display:inline-block;">Click here to pay →</a>
+          </div>
+
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;">
+            <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">PayPal</div>
+            <div style="font-weight:800;font-size:1.1rem;color:var(--accent2);">dustin.vinke@yahoo.com</div>
+            <a href="https://paypal.me/dustinvinke" target="_blank" style="font-size:0.8rem;color:var(--accent);margin-top:4px;display:inline-block;">Click here to pay →</a>
+          </div>
+
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;">
+            <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Cash App</div>
+            <div style="font-weight:800;font-size:1.1rem;color:var(--accent2);">$DustinVinke</div>
+            <a href="https://cash.app/$DustinVinke" target="_blank" style="font-size:0.8rem;color:var(--accent);margin-top:4px;display:inline-block;">Click here to pay →</a>
+          </div>
+
         </div>
-
-        <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;">
-          <div style="font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">Cash App</div>
-          <div style="font-weight:800;font-size:1.1rem;color:var(--accent2);">$DustinVinke</div>
-          <a href="https://cash.app/$DustinVinke" target="_blank" style="font-size:0.8rem;color:var(--accent);margin-top:4px;display:inline-block;">Click here to pay →</a>
-        </div>
-
       </div>
     </div>
 
@@ -491,7 +499,15 @@ const GROUPS = [
 const picks = GROUPS.map(() => ({ first: null, second: null }));
 const isComplete = gi => picks[gi].first !== null && picks[gi].second !== null;
 
-/* ===== RULES TOGGLE ===== */
+/* ===== ACCORDION TOGGLES ===== */
+function togglePayment() {
+  const body = document.getElementById('payment-body');
+  const chevron = document.getElementById('payment-chevron');
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  chevron.style.transform = open ? '' : 'rotate(180deg)';
+}
+
 function toggleRules() {
   const body = document.getElementById('rules-body');
   const chevron = document.getElementById('rules-chevron');
