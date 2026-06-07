@@ -237,6 +237,7 @@
   <button class="nav-tab active" onclick="showTab('picks')">📋 My Picks</button>
   <button class="nav-tab" onclick="showTab('leaderboard')">🏆 Leaderboard</button>
   <button class="nav-tab" onclick="showTab('rules')">📜 Rules & Payment</button>
+  <button class="nav-tab" onclick="showTab('bracket')">🗓️ Bracket Round</button>
 </nav>
 
 <!-- ===== PICKS TAB ===== -->
@@ -473,6 +474,15 @@
     <h2>🏆 Leaderboard <button class="btn btn-ghost refresh-btn" style="font-size:0.8rem;padding:6px 14px;" onclick="loadLeaderboard()">↻ Refresh</button></h2>
     <p class="sub">All submitted picks — scoring unlocks when match results come in</p>
     <div id="lb-content"><div class="lb-loading">Loading submissions…</div></div>
+  </div>
+</div>
+
+<!-- ===== BRACKET TAB ===== -->
+<div id="tab-bracket" class="screen">
+  <div style="max-width:700px;margin:80px auto;padding:0 16px;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:20px;">🗓️</div>
+    <h2 style="font-size:1.6rem;font-weight:800;color:var(--accent2);margin-bottom:12px;">Bracket Round</h2>
+    <p style="color:var(--muted);font-size:1rem;line-height:1.6;">Bracket is not set yet — come back when it is to fill out your bracket.</p>
   </div>
 </div>
 
