@@ -481,10 +481,40 @@
 <div id="tab-bracket" class="screen">
 
   <!-- PRE-COUNTDOWN: shown before June 28 12:00am ET -->
-  <div id="bracket-waiting" style="max-width:700px;margin:80px auto;padding:0 16px;text-align:center;">
-    <div style="font-size:3rem;margin-bottom:20px;">🗓️</div>
-    <h2 style="font-size:1.6rem;font-weight:800;color:var(--accent2);margin-bottom:12px;">Bracket Round</h2>
-    <p style="color:var(--muted);font-size:1rem;line-height:1.6;">Bracket is not set yet — come back when it is to fill out your bracket.</p>
+  <div id="bracket-waiting" style="display:none;max-width:700px;margin:0 auto;padding:40px 16px;">
+
+    <div style="text-align:center;margin-bottom:36px;">
+      <div style="font-size:2.4rem;margin-bottom:12px;">🗓️</div>
+      <h2 style="font-size:1.8rem;font-weight:800;color:var(--accent2);margin-bottom:8px;">Bracket Opens Soon</h2>
+      <p style="color:var(--muted);font-size:0.95rem;">Come back on <strong style="color:var(--accent2);">June 28 at midnight</strong> to fill out your bracket!</p>
+    </div>
+
+    <!-- Pre-countdown blocks -->
+    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:32px;flex-wrap:wrap;">
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:18px 22px;text-align:center;min-width:72px;">
+        <div class="cd-num" id="pre-d">00</div>
+        <div class="cd-label">Days</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:1.8rem;font-weight:800;color:var(--muted);padding-bottom:18px;">:</div>
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:18px 22px;text-align:center;min-width:72px;">
+        <div class="cd-num" id="pre-h">00</div>
+        <div class="cd-label">Hours</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:1.8rem;font-weight:800;color:var(--muted);padding-bottom:18px;">:</div>
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:18px 22px;text-align:center;min-width:72px;">
+        <div class="cd-num" id="pre-m">00</div>
+        <div class="cd-label">Min</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:1.8rem;font-weight:800;color:var(--muted);padding-bottom:18px;">:</div>
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:18px 22px;text-align:center;min-width:72px;">
+        <div class="cd-num" id="pre-s">00</div>
+        <div class="cd-label">Sec</div>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;">
+      <p style="color:var(--muted);font-size:0.9rem;">Once the bracket opens, you'll have until <strong style="color:var(--accent2);">3:00 PM ET on June 28</strong> to pick every round all the way to the champion.</p>
+    </div>
   </div>
 
   <!-- COUNTDOWN: shown June 28 12:00am–3:00pm ET -->
@@ -571,20 +601,39 @@ const BRACKET_WINDOW = BRACKET_DEADLINE - BRACKET_START;
 
 function initBracketTab() {
   const now = new Date();
+  const waiting   = document.getElementById('bracket-waiting');
+  const countdown = document.getElementById('bracket-countdown');
+  const locked    = document.getElementById('bracket-locked');
+  waiting.style.display = 'none';
+  countdown.style.display = 'none';
+  locked.style.display = 'none';
+
   if (now < BRACKET_START) {
-    document.getElementById('bracket-waiting').style.display = 'block';
-    document.getElementById('bracket-countdown').style.display = 'none';
-    document.getElementById('bracket-locked').style.display = 'none';
+    waiting.style.display = 'block';
+    startPreCountdown();
   } else if (now >= BRACKET_DEADLINE) {
-    document.getElementById('bracket-waiting').style.display = 'none';
-    document.getElementById('bracket-countdown').style.display = 'none';
-    document.getElementById('bracket-locked').style.display = 'block';
+    locked.style.display = 'block';
   } else {
-    document.getElementById('bracket-waiting').style.display = 'none';
-    document.getElementById('bracket-countdown').style.display = 'block';
-    document.getElementById('bracket-locked').style.display = 'none';
+    countdown.style.display = 'block';
     startBracketCountdown();
   }
+}
+
+function startPreCountdown() {
+  function tick() {
+    const diff = BRACKET_START - new Date();
+    if (diff <= 0) { initBracketTab(); return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('pre-d').textContent = String(d).padStart(2,'0');
+    document.getElementById('pre-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('pre-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('pre-s').textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 1000);
 }
 
 function startBracketCountdown() {
