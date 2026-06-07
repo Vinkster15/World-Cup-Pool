@@ -479,11 +479,66 @@
 
 <!-- ===== BRACKET TAB ===== -->
 <div id="tab-bracket" class="screen">
-  <div style="max-width:700px;margin:80px auto;padding:0 16px;text-align:center;">
+
+  <!-- PRE-COUNTDOWN: shown before June 28 12:00am ET -->
+  <div id="bracket-waiting" style="max-width:700px;margin:80px auto;padding:0 16px;text-align:center;">
     <div style="font-size:3rem;margin-bottom:20px;">🗓️</div>
     <h2 style="font-size:1.6rem;font-weight:800;color:var(--accent2);margin-bottom:12px;">Bracket Round</h2>
     <p style="color:var(--muted);font-size:1rem;line-height:1.6;">Bracket is not set yet — come back when it is to fill out your bracket.</p>
   </div>
+
+  <!-- COUNTDOWN: shown June 28 12:00am–3:00pm ET -->
+  <div id="bracket-countdown" style="display:none;max-width:700px;margin:0 auto;padding:40px 16px;">
+
+    <div style="text-align:center;margin-bottom:36px;">
+      <div style="font-size:2.4rem;margin-bottom:12px;">⚽</div>
+      <h2 style="font-size:1.8rem;font-weight:800;color:var(--accent2);margin-bottom:8px;">Bracket Is Open!</h2>
+      <p style="color:var(--muted);font-size:0.95rem;">Picks lock at <strong style="color:var(--accent2);">3:00 PM ET on June 28</strong> — don't wait!</p>
+    </div>
+
+    <!-- Countdown blocks -->
+    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:32px;flex-wrap:wrap;">
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--accent);border-radius:14px;padding:18px 22px;text-align:center;min-width:72px;box-shadow:0 0 20px rgba(201,162,39,0.15);">
+        <div class="cd-num" id="bk-h">00</div>
+        <div class="cd-label">Hours</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:1.8rem;font-weight:800;color:var(--accent);padding-bottom:18px;">:</div>
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--accent);border-radius:14px;padding:18px 22px;text-align:center;min-width:72px;box-shadow:0 0 20px rgba(201,162,39,0.15);">
+        <div class="cd-num" id="bk-m">00</div>
+        <div class="cd-label">Min</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:1.8rem;font-weight:800;color:var(--accent);padding-bottom:18px;">:</div>
+      <div style="background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--accent);border-radius:14px;padding:18px 22px;text-align:center;min-width:72px;box-shadow:0 0 20px rgba(201,162,39,0.15);">
+        <div class="cd-num" id="bk-s">00</div>
+        <div class="cd-label">Sec</div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-bottom:6px;">
+        <span>12:00 AM</span><span>Deadline: 3:00 PM ET</span>
+      </div>
+      <div style="background:var(--border);border-radius:20px;height:10px;overflow:hidden;">
+        <div id="bk-progress" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:20px;transition:width 1s linear;width:0%;"></div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;">
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Fill out your full bracket before time runs out — pick every round all the way to the champion.</p>
+      <button class="btn btn-primary" style="opacity:0.4;cursor:not-allowed;" disabled>Fill Out Bracket →</button>
+      <p style="color:var(--muted);font-size:0.75rem;margin-top:10px;">Bracket form coming soon</p>
+    </div>
+  </div>
+
+  <!-- LOCKED: shown after 3:00pm ET June 28 -->
+  <div id="bracket-locked" style="display:none;max-width:700px;margin:80px auto;padding:0 16px;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:20px;">🔒</div>
+    <h2 style="font-size:1.6rem;font-weight:800;color:var(--accent2);margin-bottom:12px;">Bracket Is Locked</h2>
+    <p style="color:var(--muted);font-size:1rem;">The deadline has passed. Check the leaderboard to see how everyone stacks up!</p>
+  </div>
+
 </div>
 
 <script>
@@ -509,6 +564,50 @@ const GROUPS = [
 const picks = GROUPS.map(() => ({ first: null, second: null }));
 const isComplete = gi => picks[gi].first !== null && picks[gi].second !== null;
 
+/* ===== BRACKET COUNTDOWN ===== */
+const BRACKET_START  = new Date('2026-06-28T04:00:00Z'); // June 28 12:00am ET (UTC-4)
+const BRACKET_DEADLINE = new Date('2026-06-28T19:00:00Z'); // June 28 3:00pm ET
+const BRACKET_WINDOW = BRACKET_DEADLINE - BRACKET_START;
+
+function initBracketTab() {
+  const now = new Date();
+  if (now < BRACKET_START) {
+    document.getElementById('bracket-waiting').style.display = 'block';
+    document.getElementById('bracket-countdown').style.display = 'none';
+    document.getElementById('bracket-locked').style.display = 'none';
+  } else if (now >= BRACKET_DEADLINE) {
+    document.getElementById('bracket-waiting').style.display = 'none';
+    document.getElementById('bracket-countdown').style.display = 'none';
+    document.getElementById('bracket-locked').style.display = 'block';
+  } else {
+    document.getElementById('bracket-waiting').style.display = 'none';
+    document.getElementById('bracket-countdown').style.display = 'block';
+    document.getElementById('bracket-locked').style.display = 'none';
+    startBracketCountdown();
+  }
+}
+
+function startBracketCountdown() {
+  function tick() {
+    const now  = new Date();
+    const diff = BRACKET_DEADLINE - now;
+    if (diff <= 0) { initBracketTab(); return; }
+
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('bk-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('bk-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('bk-s').textContent = String(s).padStart(2,'0');
+
+    const elapsed = now - BRACKET_START;
+    const pct = Math.min(100, (elapsed / BRACKET_WINDOW) * 100);
+    document.getElementById('bk-progress').style.width = pct + '%';
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
 /* ===== ACCORDION TOGGLES ===== */
 function togglePayment() {
   const body = document.getElementById('payment-body');
@@ -533,6 +632,7 @@ function showTab(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
   event.currentTarget.classList.add('active');
   if (tab === 'leaderboard') loadLeaderboard();
+  if (tab === 'bracket') initBracketTab();
 }
 
 /* ===== RENDER GROUPS ===== */
