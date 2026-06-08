@@ -771,7 +771,7 @@ function getEliminatedTeams() {
 function showThirdScreen() {
   document.getElementById('game-screen').style.display = 'none';
   document.getElementById('third-screen').style.display = 'block';
-  thirdPicks.clear();
+  // Don't clear thirdPicks — returning users have their picks restored from the server
   renderThirdGrid();
   window.scrollTo(0, 0);
 }
