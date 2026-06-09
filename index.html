@@ -70,10 +70,7 @@
   @media (max-width: 600px) {
     .top-nav { padding: 6px 4px; gap: 2px; }
     .nav-tab { padding: 6px 8px; font-size: 0.68rem; letter-spacing: 0; }
-    header { padding: 14px 16px 14px; }
-    header h1 { font-size: 1.35rem; }
-    header p { font-size: 0.8rem; }
-    .payment-notice, .payment-notice button { font-size: 0.72rem !important; letter-spacing: 0.02em !important; }
+    .payment-notice, .payment-notice button { font-size: 0.8rem !important; letter-spacing: 0.02em !important; }
   }
 
   /* HEADER */
@@ -100,6 +97,11 @@
   }
   header h1 { font-size: 2rem; font-weight: 800; color: var(--accent2); text-shadow: 0 0 30px rgba(34,197,94,0.5), 0 2px 12px rgba(34,197,94,0.3); }
   header p { color: var(--muted); margin-top: 6px; font-size: 0.95rem; }
+  @media (max-width: 600px) {
+    header { padding: 14px 16px 14px; }
+    header h1 { font-size: 1.35rem; }
+    header p { font-size: 0.8rem; }
+  }
   .progress-bar-wrap { max-width: 500px; margin: 14px auto 0; background: var(--border); border-radius: 20px; height: 8px; overflow: hidden; }
   .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 20px; transition: width 0.4s ease; width: 0%; }
   .progress-label { text-align: center; font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
