@@ -70,6 +70,10 @@
   @media (max-width: 600px) {
     .top-nav { padding: 6px 4px; gap: 2px; }
     .nav-tab { padding: 6px 8px; font-size: 0.68rem; letter-spacing: 0; }
+    header { padding: 14px 16px 14px; }
+    header h1 { font-size: 1.35rem; }
+    header p { font-size: 0.8rem; }
+    .payment-notice, .payment-notice button { font-size: 0.72rem !important; letter-spacing: 0.02em !important; }
   }
 
   /* HEADER */
@@ -395,7 +399,7 @@
       </div>
       <div id="progress-label" style="display:none;"></div>
       <div style="margin-top:12px;">
-        <span style="font-size:1.05rem;font-weight:800;letter-spacing:0.06em;color:#fbbf24;text-shadow:0 0 14px rgba(251,191,36,0.45);">⚠️ MAKE PAYMENT <button onclick="goToPayment()" style="background:none;border:none;color:#fbbf24;font-size:1.05rem;font-weight:800;letter-spacing:0.06em;cursor:pointer;text-decoration:underline;padding:0;font-family:'Oswald',sans-serif;">HERE</button> BEFORE DEADLINE ⚠️</span>
+        <span class="payment-notice" style="font-size:1.05rem;font-weight:800;letter-spacing:0.06em;color:#fbbf24;text-shadow:0 0 14px rgba(251,191,36,0.45);">⚠️ MAKE PAYMENT <button onclick="goToPayment()" class="payment-notice" style="background:none;border:none;color:#fbbf24;font-size:1.05rem;font-weight:800;letter-spacing:0.06em;cursor:pointer;text-decoration:underline;padding:0;font-family:'Oswald',sans-serif;">HERE</button> BEFORE DEADLINE ⚠️</span>
       </div>
       <!-- Countdown (shown before deadline) -->
       <div id="countdown-wrap" style="margin-top:14px;display:none;">
