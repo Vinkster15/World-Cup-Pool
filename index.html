@@ -205,6 +205,20 @@
   .lb-group-team.silver { color: #a0aab8; }
   .lb-group-team.bronze { color: #cd7f32; }
   .lb-group-team .medal { font-size: 0.7rem; flex-shrink: 0; }
+  .lb-group-team.correct { background: rgba(34,197,94,0.13); }
+  .lb-group-team.correct span { color: #4ade80 !important; }
+  .lb-group-team.wrong   { background: rgba(239,68,68,0.10); }
+  .lb-group-team.wrong   span { color: #f87171 !important; text-decoration: line-through; opacity: 0.85; }
+  /* Bracket section inside leaderboard expand */
+  .lb-bracket-section { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .lb-bracket-title { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .lb-bracket-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
+  .lb-bracket-rd { font-size: 0.65rem; font-weight: 700; color: var(--muted); min-width: 60px; flex-shrink: 0; }
+  .bk-chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.68rem; margin: 2px 1px; white-space: nowrap; }
+  .bk-chip.pending    { background: rgba(255,255,255,0.06); color: var(--muted); }
+  .bk-chip.correct    { background: rgba(34,197,94,0.18); color: #4ade80; }
+  .bk-chip.wrong      { background: rgba(239,68,68,0.14); color: #f87171; text-decoration: line-through; }
+  .bk-chip.impossible { background: rgba(239,68,68,0.08); color: #f87171; text-decoration: line-through; opacity: 0.55; }
   .lb-empty { text-align: center; color: var(--muted); padding: 60px 0; font-size: 0.9rem; }
   .lb-loading { text-align: center; color: var(--muted); padding: 60px 0; }
   .refresh-btn { float: right; }
@@ -219,6 +233,35 @@
   .cd-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
   .picks-locked-overlay { text-align: center; padding: 60px 20px; }
   .picks-locked-overlay h2 { font-size: 1.5rem; font-weight: 800; color: var(--accent2); margin-bottom: 10px; }
+
+  /* BRACKET PICKER */
+  .bracket-wrap { max-width: 700px; margin: 0 auto; padding: 0 16px 80px; }
+  .bk-sticky-nav { position: sticky; top: 0; z-index: 50; background: var(--bg); padding: 12px 0 10px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+  .bracket-round-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .bracket-round-tabs::-webkit-scrollbar { display: none; }
+  .bk-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.18s; font-family: 'Oswald', sans-serif; letter-spacing: 0.05em; }
+  .bk-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .bk-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .bk-tab.complete { border-color: rgba(34,197,94,0.45); color: var(--accent); }
+  .bk-round-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .match-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 10px; overflow: hidden; }
+  .match-header { padding: 7px 14px; font-size: 0.67rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--border); background: var(--card2); }
+  .match-teams { display: flex; flex-direction: column; }
+  .match-team-btn { display: flex; align-items: center; gap: 11px; padding: 13px 14px; background: transparent; border: none; cursor: pointer; width: 100%; text-align: left; transition: background 0.14s; color: var(--text); font-family: inherit; font-size: 0.88rem; }
+  .match-team-btn:hover:not(.tbd):not([disabled]) { background: rgba(255,255,255,0.05); }
+  .match-team-btn.picked { background: rgba(34,197,94,0.09); }
+  .match-team-btn.correct-pick { background: rgba(34,197,94,0.14); }
+  .match-team-btn.wrong-pick { background: rgba(239,68,68,0.07); color: var(--muted); text-decoration: line-through; }
+  .match-team-btn.tbd { color: var(--muted); cursor: default; font-style: italic; font-size: 0.82rem; }
+  .bk-check { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); display: none; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+  .match-team-btn.picked .bk-check { display: flex; }
+  .match-team-btn.correct-pick .bk-check { display: flex; }
+  .match-team-btn.wrong-pick .bk-check { display: flex; background: #ef4444; }
+  .match-divider { height: 1px; background: var(--border); position: relative; }
+  .match-divider::after { content: 'vs'; font-size: 0.6rem; color: var(--muted); background: var(--card); padding: 0 7px; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+  .bk-pts-badge { font-size: 0.67rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+  .bk-pts-badge.correct { background: rgba(34,197,94,0.18); color: var(--accent2); }
+  .bk-pts-badge.wrong { background: rgba(239,68,68,0.15); color: #f87171; }
   .picks-locked-overlay p { color: var(--muted); font-size: 0.95rem; }
 
   /* AUTH MODAL */
@@ -586,17 +629,19 @@
     <!-- CTA -->
     <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;">
       <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Fill out your full bracket before time runs out — pick every round all the way to the champion.</p>
-      <button class="btn btn-primary" style="opacity:0.4;cursor:not-allowed;" disabled>Fill Out Bracket →</button>
-      <p style="color:var(--muted);font-size:0.75rem;margin-top:10px;">Bracket form coming soon</p>
+      <button class="btn btn-primary" onclick="openBracketPicker(this)">Fill Out Bracket →</button>
     </div>
   </div>
 
   <!-- LOCKED: shown after 3:00pm ET June 28 -->
-  <div id="bracket-locked" style="display:none;max-width:700px;margin:80px auto;padding:0 16px;text-align:center;">
-    <div style="font-size:3rem;margin-bottom:20px;">🔒</div>
-    <h2 style="font-size:1.6rem;font-weight:800;color:var(--accent2);margin-bottom:12px;">Bracket Is Locked</h2>
-    <p style="color:var(--muted);font-size:1rem;">The deadline has passed. Check the leaderboard to see how everyone stacks up!</p>
+  <div id="bracket-locked" style="display:none;max-width:700px;margin:40px auto 0;padding:0 16px;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
+    <h2 style="font-size:1.6rem;font-weight:800;color:var(--accent2);margin-bottom:8px;">Bracket Picks Are Locked</h2>
+    <p style="color:var(--muted);font-size:1rem;margin-bottom:28px;">The deadline has passed — results updating below as matches are played!</p>
   </div>
+
+  <!-- BRACKET PICKER: rendered when BRACKET_LIVE=true -->
+  <div id="bracket-picker" style="display:none;"></div>
 
 </div>
 
@@ -623,29 +668,348 @@ const GROUPS = [
 const picks = GROUPS.map(() => ({ first: null, second: null }));
 const isComplete = gi => picks[gi].first !== null && picks[gi].second !== null;
 
+/* ===== BRACKET LIVE FLAG =====
+   Set to true on June 28 when ready to push bracket to all users.
+   While false, the bracket tab shows "coming soon" to everyone.
+   ============================================= */
+const BRACKET_LIVE = false;
+
+
 /* ===== BRACKET COUNTDOWN ===== */
-const BRACKET_START  = new Date('2026-06-28T04:00:00Z'); // June 28 12:00am ET (UTC-4)
+const BRACKET_START    = new Date('2026-06-28T04:00:00Z'); // June 28 12:00am ET (UTC-4)
 const BRACKET_DEADLINE = new Date('2026-06-28T19:00:00Z'); // June 28 3:00pm ET
-const BRACKET_WINDOW = BRACKET_DEADLINE - BRACKET_START;
+const BRACKET_WINDOW   = BRACKET_DEADLINE - BRACKET_START;
 
 function initBracketTab() {
   const now = new Date();
   const waiting   = document.getElementById('bracket-waiting');
   const countdown = document.getElementById('bracket-countdown');
   const locked    = document.getElementById('bracket-locked');
-  waiting.style.display = 'none';
+  const picker    = document.getElementById('bracket-picker');
+  waiting.style.display   = 'none';
   countdown.style.display = 'none';
-  locked.style.display = 'none';
+  locked.style.display    = 'none';
+  picker.style.display    = 'none';
 
-  if (now < BRACKET_START) {
-    waiting.style.display = 'block';
-    startPreCountdown();
-  } else if (now >= BRACKET_DEADLINE) {
-    locked.style.display = 'block';
-  } else {
+  if (!BRACKET_LIVE) {
+    // Not yet pushed live — show normal pre-tournament state
+    if (now < BRACKET_START) {
+      waiting.style.display = 'block';
+      startPreCountdown();
+    } else if (now >= BRACKET_DEADLINE) {
+      locked.style.display = 'block';
+    } else {
+      countdown.style.display = 'block';
+      startBracketCountdown();
+    }
+    return;
+  }
+
+  // BRACKET_LIVE = true
+  if (now >= BRACKET_START && now < BRACKET_DEADLINE) {
+    // Picks window open
     countdown.style.display = 'block';
     startBracketCountdown();
+    initBracketPicker();
+  } else if (now >= BRACKET_DEADLINE) {
+    // Picks locked — show bracket read-only
+    locked.style.display = 'block';
+    initBracketPicker();
+  } else {
+    waiting.style.display = 'block';
+    startPreCountdown();
   }
+}
+
+function openBracketPicker(btn) {
+  // Called when user clicks "Fill Out Bracket" during the picks window
+  if (btn) btn.style.display = 'none';
+  initBracketPicker();
+  setTimeout(() => {
+    document.getElementById('bracket-picker')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+
+/* ===== BRACKET ENGINE ===== */
+
+/* -- Round definitions -- */
+const ROUNDS_DEF = [
+  { id: 'r32',   label: 'R32',          pts: 1,  matches: [73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88] },
+  { id: 'r16',   label: 'Round of 16',  pts: 2,  matches: [89,90,91,92,93,94,95,96] },
+  { id: 'qf',    label: 'Quarterfinals',pts: 4,  matches: [97,98,99,100] },
+  { id: 'sf',    label: 'Semifinals',   pts: 8,  matches: [101,102] },
+  { id: 'final', label: 'Final',        pts: 16, matches: [104,103] },
+];
+const MATCH_PTS = {73:1,74:1,75:1,76:1,77:1,78:1,79:1,80:1,81:1,82:1,83:1,84:1,85:1,86:1,87:1,88:1,89:2,90:2,91:2,92:2,93:2,94:2,95:2,96:2,97:4,98:4,99:4,100:4,101:8,102:8,103:8,104:16};
+const TOTAL_BRACKET_PICKS = 31; // excludes M103 (auto-resolved 3rd place)
+
+// Which matches feed into each R16+ match (as winners, except M103 uses losers)
+const MATCH_FEEDERS = {
+  89:[74,77], 90:[73,75], 91:[76,78], 92:[79,80],
+  93:[83,84], 94:[81,82], 95:[86,88], 96:[85,87],
+  97:[89,90], 98:[93,94], 99:[91,92], 100:[95,96],
+  101:[97,98], 102:[99,100],
+  103:[101,102], // 3rd place — losers of SF
+  104:[101,102], // Final — winners of SF
+};
+
+/* -- State -- */
+let bracketGroupResults = {}; // { 'Group A': { first, second, third }, ... }
+let bracketMatchMeta    = {}; // { 73: { thirdTeam, winner }, ... }
+let bracketUserPicks    = {}; // { M73: 'Brazil', M74: 'Germany', ... }
+let bracketActiveRound  = 'r32';
+let bracketDataLoaded   = false;
+
+/* -- Team helpers -- */
+function getR32Teams(mn) {
+  const G = bracketGroupResults, M = bracketMatchMeta;
+  const th = id => (M[id] && M[id].thirdTeam) ? M[id].thirdTeam : null;
+  const map = {
+    73:[G['Group A']?.second, G['Group B']?.second],
+    74:[G['Group E']?.first,  th(74)],
+    75:[G['Group F']?.first,  G['Group C']?.second],
+    76:[G['Group C']?.first,  G['Group F']?.second],
+    77:[G['Group I']?.first,  th(77)],
+    78:[G['Group E']?.second, G['Group I']?.second],
+    79:[G['Group A']?.first,  th(79)],
+    80:[G['Group L']?.first,  th(80)],
+    81:[G['Group D']?.first,  th(81)],
+    82:[G['Group G']?.first,  th(82)],
+    83:[G['Group K']?.second, G['Group L']?.second],
+    84:[G['Group H']?.first,  G['Group J']?.second],
+    85:[G['Group B']?.first,  th(85)],
+    86:[G['Group J']?.first,  G['Group H']?.second],
+    87:[G['Group K']?.first,  th(87)],
+    88:[G['Group D']?.second, G['Group G']?.second],
+  };
+  return (map[mn] || [null,null]).map(t => t || null);
+}
+
+function getBracketTeams(mn) {
+  if (mn >= 73 && mn <= 88) return getR32Teams(mn);
+  const [f1, f2] = MATCH_FEEDERS[mn] || [null, null];
+  if (mn === 103) {
+    // 3rd place: losers of the two SF matches
+    const sf1 = getBracketTeams(101), sf2 = getBracketTeams(102);
+    const p1 = bracketUserPicks['M101'], p2 = bracketUserPicks['M102'];
+    const loser1 = p1 ? (sf1[0] === p1 ? sf1[1] : sf1[0]) : null;
+    const loser2 = p2 ? (sf2[0] === p2 ? sf2[1] : sf2[0]) : null;
+    return [loser1, loser2];
+  }
+  return [f1 ? (bracketUserPicks['M'+f1] || null) : null,
+          f2 ? (bracketUserPicks['M'+f2] || null) : null];
+}
+
+function getTeamFlag(name) {
+  if (!name) return '';
+  for (const g of GROUPS) for (const t of g.teams) if (t.name === name) return t.code;
+  return '';
+}
+
+function isRoundComplete(roundId) {
+  const rd = ROUNDS_DEF.find(r => r.id === roundId);
+  return rd ? rd.matches.every(m => m === 103 || bracketUserPicks['M' + m]) : false;
+}
+
+function countBracketPicks() {
+  return Object.keys(bracketUserPicks).filter(k => parseInt(k.slice(1)) !== 103 && bracketUserPicks[k]).length;
+}
+
+/* -- Data loading -- */
+async function loadBracketData() {
+  if (bracketDataLoaded) return;
+  try {
+    const r = await fetch(SCRIPT_URL + '?action=results');
+    const rows = await r.json();
+    rows.slice(1).forEach(row => {
+      if (row[0]) bracketGroupResults[row[0]] = {
+        first: String(row[1]||''), second: String(row[2]||''), third: String(row[3]||'')
+      };
+    });
+  } catch(e) {}
+  try {
+    const r = await fetch(SCRIPT_URL + '?action=bracketResults');
+    const rows = await r.json();
+    rows.slice(1).forEach(row => {
+      const m = parseInt(row[0]);
+      if (m >= 73 && m <= 104) bracketMatchMeta[m] = { thirdTeam: String(row[3]||''), winner: String(row[4]||'') };
+    });
+  } catch(e) {}
+  bracketDataLoaded = true;
+}
+
+async function loadUserBracketPicks() {
+  if (!currentUser) return;
+  try {
+    const url = SCRIPT_URL + '?action=getBracketPicks&data=' +
+      encodeURIComponent(JSON.stringify({ email: currentUser.email }));
+    const data = await (await fetch(url)).json();
+    if (data.found && data.picks) {
+      for (let m = 73; m <= 104; m++) {
+        const v = data.picks['M' + m];
+        if (v) bracketUserPicks['M' + m] = v;
+      }
+    }
+  } catch(e) {}
+}
+
+/* -- Render -- */
+async function initBracketPicker() {
+  const picker = document.getElementById('bracket-picker');
+  picker.style.display = 'block';
+  picker.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Loading bracket…</div>';
+  await loadBracketData();
+  if (currentUser) await loadUserBracketPicks();
+  renderBracketUI();
+}
+
+function renderBracketUI() {
+  const picker = document.getElementById('bracket-picker');
+  const locked = (new Date() >= BRACKET_DEADLINE);
+  const hasData = Object.keys(bracketGroupResults).length > 0;
+
+  if (!hasData) {
+    picker.innerHTML = `<div class="bracket-wrap" style="text-align:center;padding:60px 20px;">
+      <div style="font-size:2rem;margin-bottom:16px;">⏳</div>
+      <h3 style="color:var(--accent2);font-size:1.2rem;margin-bottom:10px;">Bracket Coming Soon</h3>
+      <p style="color:var(--muted);font-size:0.9rem;">Group stage results are being entered. Check back shortly!</p>
+    </div>`;
+    return;
+  }
+
+  const ri = ROUNDS_DEF.findIndex(r => r.id === bracketActiveRound);
+  const activeRd = ROUNDS_DEF[ri];
+  let html = '<div class="bracket-wrap">';
+
+  // Sticky round nav bar
+  html += '<div class="bk-sticky-nav"><div class="bracket-round-tabs">';
+  ROUNDS_DEF.forEach(rd => {
+    const done = isRoundComplete(rd.id);
+    html += `<button class="bk-tab${bracketActiveRound===rd.id?' active':''}${done?' complete':''}" onclick="switchBracketRound('${rd.id}')">${rd.label}${done?' ✓':''}</button>`;
+  });
+  html += '</div></div>';
+
+  // Round label + match count
+  if (activeRd) {
+    html += `<div class="bk-round-label">${activeRd.label} &nbsp;·&nbsp; ${activeRd.matches.length} match${activeRd.matches.length>1?'es':''} &nbsp;·&nbsp; ${activeRd.pts} pt${activeRd.pts>1?'s':''} each</div>`;
+  }
+
+  // Match cards
+  html += '<div id="bk-matches">';
+  if (activeRd) activeRd.matches.forEach(mn => { html += renderMatchCard(mn, locked); });
+  html += '</div>';
+
+  // Prev/Next nav
+  html += '<div style="display:flex;justify-content:space-between;margin-top:18px;gap:10px;">';
+  if (ri > 0) html += `<button class="btn" onclick="switchBracketRound('${ROUNDS_DEF[ri-1].id}')" style="flex:1;padding:11px 8px;font-size:0.83rem;">← ${ROUNDS_DEF[ri-1].label}</button>`;
+  else html += '<div style="flex:1;"></div>';
+  if (ri < ROUNDS_DEF.length - 1) html += `<button class="btn btn-primary" onclick="switchBracketRound('${ROUNDS_DEF[ri+1].id}')" style="flex:1;padding:11px 8px;font-size:0.83rem;">${ROUNDS_DEF[ri+1].label} →</button>`;
+  else html += '<div style="flex:1;"></div>';
+  html += '</div>';
+
+  // Save bar / status
+  if (!locked && currentUser) {
+    const cnt = countBracketPicks();
+    html += `<div style="margin-top:18px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <span style="color:var(--muted);font-size:0.82rem;"><strong style="color:var(--accent2);">${cnt}</strong> / ${TOTAL_BRACKET_PICKS} picks made</span>
+      <button class="btn btn-primary" onclick="saveBracketPicks()" id="bk-save-btn" style="padding:9px 20px;font-size:0.83rem;">Save Picks</button>
+    </div>`;
+  } else if (locked) {
+    html += '<div style="text-align:center;margin-top:18px;color:var(--muted);font-size:0.82rem;">🔒 Picks locked — results update here as matches are played.</div>';
+  } else if (!currentUser) {
+    html += '<div style="text-align:center;margin-top:18px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px;color:var(--muted);font-size:0.82rem;">Log in to save your bracket picks.</div>';
+  }
+
+  html += '</div>'; // .bracket-wrap
+  picker.innerHTML = html;
+}
+
+function renderMatchCard(mn, locked) {
+  const [t1, t2] = getBracketTeams(mn);
+  const pick = bracketUserPicks['M' + mn];
+  const actual = (bracketMatchMeta[mn] && bracketMatchMeta[mn].winner) ? bracketMatchMeta[mn].winner : '';
+  const pts = MATCH_PTS[mn] || 1;
+  const is3P = (mn === 103);
+  const roundLabel = is3P ? '3rd Place Match · 8 pts' : `Match ${mn} · ${pts} pt${pts>1?'s':''}`;
+  const canPick = t1 && t2 && !locked && currentUser && !is3P;
+
+  const teamRow = (team) => {
+    if (!team) return `<div class="match-team-btn tbd"><span>TBD — complete earlier rounds first</span></div>`;
+    const code = getTeamFlag(team);
+    const flag = code ? `<img src="https://flagcdn.com/w40/${code}.png" alt="" style="width:22px;height:15px;border-radius:2px;object-fit:cover;flex-shrink:0;">` : '';
+    let cls = 'match-team-btn';
+    let badge = '';
+    if (actual && team === actual) cls += ' actual-winner';
+    if (pick === team) {
+      if (actual) {
+        cls += pick === actual ? ' correct-pick' : ' wrong-pick';
+        badge = `<span class="bk-pts-badge ${pick===actual?'correct':'wrong'}">${pick===actual?'+'+pts+'pt':'✗'}</span>`;
+      } else {
+        cls += ' picked';
+      }
+    }
+    const safeTeam = team.replace(/'/g, "\\'");
+    const click = canPick ? `onclick="pickBracketTeam(${mn},'${safeTeam}')"` : '';
+    const checkSvg = `<div class="bk-check"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+    return `<div class="${cls}" ${click}>${flag}<span style="font-size:0.88rem;">${team}</span>${badge}${checkSvg}</div>`;
+  };
+
+  return `<div class="match-card">
+    <div class="match-header">${roundLabel}</div>
+    <div class="match-teams">${teamRow(t1)}<div class="match-divider"></div>${teamRow(t2)}</div>
+  </div>`;
+}
+
+function pickBracketTeam(mn, team) {
+  const key = 'M' + mn;
+  if (bracketUserPicks[key] === team) {
+    delete bracketUserPicks[key];
+  } else {
+    bracketUserPicks[key] = team;
+    clearInvalidDownstream(mn);
+  }
+  renderBracketUI();
+}
+
+function clearInvalidDownstream(changedMatch) {
+  for (const [k, feeders] of Object.entries(MATCH_FEEDERS)) {
+    if (feeders.includes(changedMatch)) {
+      const m = parseInt(k);
+      const pick = bracketUserPicks['M' + m];
+      if (pick) {
+        const [a, b] = getBracketTeams(m);
+        if (pick !== a && pick !== b) {
+          delete bracketUserPicks['M' + m];
+          clearInvalidDownstream(m);
+        }
+      }
+    }
+  }
+}
+
+function switchBracketRound(roundId) {
+  bracketActiveRound = roundId;
+  renderBracketUI();
+  document.getElementById('bracket-picker')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function saveBracketPicks() {
+  if (!currentUser) { alert('Please log in to save your picks.'); return; }
+  const btn = document.getElementById('bk-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    const payload = { email: currentUser.email, pin: currentUser.pin, picks: bracketUserPicks };
+    const url = SCRIPT_URL + '?action=saveBracket&data=' + encodeURIComponent(JSON.stringify(payload));
+    const data = await (await fetch(url)).json();
+    if (data.success) {
+      showToast('✓ Bracket picks saved!');
+    } else {
+      alert('Save failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch(e) {
+    alert('Could not reach server: ' + e.message);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '💾 Save Picks'; }
 }
 
 function startPreCountdown() {
@@ -937,15 +1301,6 @@ function goBack() {
   document.getElementById('third-screen').style.display = 'block';
 }
 
-/* ===== MOCK DATA (remove before going live) ===== */
-const MOCK_ROWS = [
-  ['Timestamp','Name','Group A 1st','Group A 2nd','Group B 1st','Group B 2nd','Group C 1st','Group C 2nd','Group D 1st','Group D 2nd','Group E 1st','Group E 2nd','Group F 1st','Group F 2nd','Group G 1st','Group G 2nd','Group H 1st','Group H 2nd','Group I 1st','Group I 2nd','Group J 1st','Group J 2nd','Group K 1st','Group K 2nd','Group L 1st','Group L 2nd','3rd Place Pick 1','3rd Place Pick 2','3rd Place Pick 3','3rd Place Pick 4','3rd Place Pick 5','3rd Place Pick 6','3rd Place Pick 7','3rd Place Pick 8'],
-  ['2026-06-10T14:22:00Z','Dustin','Mexico','South Korea','Canada','Switzerland','Brazil','Morocco','United States','Australia','Germany','Ecuador','Netherlands','Japan','Belgium','Egypt','Spain','Uruguay','France','Senegal','Argentina','Austria','Portugal','Colombia','England','Croatia','Czechia','Qatar','Haiti','Turkey','Ivory Coast','Sweden','Jordan','Ghana'],
-  ['2026-06-10T15:05:00Z','Tyler','South Africa','Mexico','Canada','Qatar','Brazil','Scotland','United States','Turkey','Germany','Ivory Coast','Netherlands','Sweden','Belgium','Iran','Spain','Saudi Arabia','France','Iraq','Argentina','Algeria','Portugal','DR Congo','England','Ghana','Switzerland','Morocco','Australia','Ecuador','Japan','Egypt','Uruguay','Croatia'],
-  ['2026-06-10T16:44:00Z','Sarah','Mexico','Czechia','Switzerland','Bosnia & Herzegovina','Brazil','Haiti','United States','Paraguay','Germany','Curaçao','Netherlands','Tunisia','Belgium','New Zealand','Spain','Cape Verde','France','Norway','Argentina','Jordan','Portugal','Uzbekistan','England','Panama','South Korea','Canada','Morocco','Australia','Ivory Coast','Japan','Saudi Arabia','Algeria'],
-  ['2026-06-10T18:11:00Z','Mike','Mexico','South Africa','Canada','Switzerland','Morocco','Brazil','United States','Australia','Germany','Ecuador','Japan','Netherlands','Egypt','Belgium','Uruguay','Spain','Senegal','France','Argentina','Austria','Colombia','Portugal','Croatia','England','South Korea','Qatar','Scotland','Turkey','Sweden','Iran','Algeria','Panama'],
-  ['2026-06-11T09:30:00Z','Jess','South Korea','Mexico','Canada','Switzerland','Brazil','Morocco','United States','Turkey','Ecuador','Germany','Netherlands','Japan','Belgium','Egypt','Spain','Uruguay','France','Senegal','Argentina','Algeria','Portugal','Colombia','England','Croatia','Czechia','Switzerland','Haiti','Australia','Sweden','Jordan','Ghana','Panama'],
-];
 
 /* ===== LEADERBOARD ===== */
 async function loadLeaderboard() {
@@ -984,10 +1339,11 @@ async function loadLeaderboard() {
   el.innerHTML = '<div class="lb-loading">Loading submissions…</div>';
 
   try {
-    // MOCK MODE — replace with real fetch when ready:
-    // const res = await fetch(SCRIPT_URL + '?action=get');
-    // const rows = await res.json();
-    const rows = MOCK_ROWS;
+    // Ensure bracket data is loaded (needed for eliminated-team detection)
+    await loadBracketData();
+
+    // Fetch real submissions from sheet
+    const rows = await (await fetch(SCRIPT_URL)).json();
 
     if (!rows || rows.length < 2) {
       el.innerHTML = '<div class="lb-empty">No submissions yet — be the first!</div>';
@@ -1008,57 +1364,177 @@ async function loadLeaderboard() {
       return `<div class="lb-group-team ${cls}"><span class="medal">${medal}</span>${img}<span>${name}</span></div>`;
     };
 
-    // ── Fetch results from sheet ─────────────────────────────────
+    // ── Group stage results ───────────────────────────────────────
     let RESULTS = {};
     try {
       const rRes = await fetch(SCRIPT_URL + '?action=results');
       const rRows = await rRes.json();
       rRows.slice(1).forEach(r => {
-        if (r[0]) RESULTS[r[0]] = { first: r[1] || '', second: r[2] || '', third: r[3] || '' };
+        if (r[0]) RESULTS[r[0]] = { first: r[1]||'', second: r[2]||'', third: r[3]||'' };
       });
-    } catch(e) { /* results not available yet */ }
+    } catch(e) {}
+
+    // ── Bracket winners ───────────────────────────────────────────
+    let BRACKET_WINNERS = {};
+    try {
+      const brRes = await fetch(SCRIPT_URL + '?action=bracketResults');
+      const brRows = await brRes.json();
+      brRows.slice(1).forEach(r => { if (r[0] && r[4]) BRACKET_WINNERS[parseInt(r[0])] = String(r[4]); });
+    } catch(e) {}
+
+    // ── Bracket picks from sheet ──────────────────────────────────
+    let ALL_BRACKET_PICKS = {};
+    try {
+      const bpRes = await fetch(SCRIPT_URL + '?action=allBracketPicks');
+      const bpRows = await bpRes.json();
+      if (bpRows && bpRows.length > 1) {
+        const bpHdrs = bpRows[0];
+        const bpEmailIdx = bpHdrs.indexOf('Email');
+        bpRows.slice(1).forEach(r => {
+          const email = String(r[bpEmailIdx] || '').toLowerCase();
+          if (email) {
+            const picks = {};
+            bpHdrs.forEach((h, j) => { picks[h] = String(r[j] || ''); });
+            ALL_BRACKET_PICKS[email] = picks;
+          }
+        });
+      }
+    } catch(e) {}
 
     // Col layout: [0]Timestamp [1]Name [2]Email [3]PIN [4..27]Group picks [28..35]3rd picks
     const PICK_OFFSET = 4;
     const THIRD_START = 28;
 
-    // ── Points calculation ────────────────────────────────────────
-    const calcPoints = (row) => {
+    // ── Teams eliminated by known results ─────────────────────────
+    // Any team that lost a known match can't advance — their future picks are impossible
+    const eliminatedTeams = new Set();
+    for (const [mn, winner] of Object.entries(BRACKET_WINNERS)) {
+      const [t1, t2] = getBracketTeams(parseInt(mn));
+      if (t1 && t1 !== winner) eliminatedTeams.add(t1);
+      if (t2 && t2 !== winner) eliminatedTeams.add(t2);
+    }
+
+    const calcBracketPts = (email) => {
+      const picks = ALL_BRACKET_PICKS[email] || {};
       let pts = 0;
-      GROUPS.forEach((group, gi) => {
-        const r = RESULTS[group.name];
-        if (!r) return;
-        if (r.first  && row[PICK_OFFSET + gi*2]     === r.first)  pts += 2;
-        if (r.second && row[PICK_OFFSET + gi*2 + 1] === r.second) pts += 1;
-        if (r.third) { for (let k = THIRD_START; k < THIRD_START + 8; k++) { if (row[k] === r.third) pts += 0.5; } }
-      });
+      for (const [mnStr, winner] of Object.entries(BRACKET_WINNERS)) {
+        const pick = picks['M' + mnStr];
+        if (pick && pick === winner) pts += (MATCH_PTS[parseInt(mnStr)] || 1);
+      }
       return pts;
     };
 
+    // ── Max possible score ────────────────────────────────────────
+    const calcMaxPossible = (row, email, currentTotal) => {
+      let extra = 0;
+      // Group stage: undecided groups — add max pts for each pick still on the board
+      GROUPS.forEach((group, gi) => {
+        if (RESULTS[group.name]) return; // already decided
+        if (row[PICK_OFFSET + gi*2])     extra += 3;
+        if (row[PICK_OFFSET + gi*2 + 1]) extra += 2;
+        // 3rd place: each pick could still score 1 pt
+        for (let k = THIRD_START; k < THIRD_START + 8; k++) { if (row[k]) { extra += 1; break; } }
+      });
+      // Bracket: undecided matches where pick is still alive
+      const bPicks = ALL_BRACKET_PICKS[email] || {};
+      ROUNDS_DEF.forEach(rd => {
+        rd.matches.forEach(mn => {
+          if (mn === 103) return;
+          if (BRACKET_WINNERS[mn] || BRACKET_WINNERS[String(mn)]) return; // already decided
+          const pick = bPicks['M' + mn];
+          if (pick && !eliminatedTeams.has(pick)) extra += (MATCH_PTS[mn] || rd.pts);
+        });
+      });
+      return currentTotal + extra;
+    };
+
+    // ── Points calculation ────────────────────────────────────────
+    const calcPoints = (row) => {
+      let groupPts = 0;
+      GROUPS.forEach((group, gi) => {
+        const r = RESULTS[group.name];
+        if (!r) return;
+        if (r.first  && row[PICK_OFFSET + gi*2]     === r.first)  groupPts += 3;
+        if (r.second && row[PICK_OFFSET + gi*2 + 1] === r.second) groupPts += 2;
+        if (r.third) { for (let k = THIRD_START; k < THIRD_START + 8; k++) { if (row[k] === r.third) groupPts += 1; } }
+      });
+      const email = String(row[2] || '').toLowerCase();
+      const bracketPts = calcBracketPts(email);
+      const total = groupPts + bracketPts;
+      const maxPossible = calcMaxPossible(row, email, total);
+      return { total, groupPts, bracketPts, maxPossible, email };
+    };
+
     // ── Sort by points desc ──────────────────────────────────────
-    const scored = data.map(row => ({ row, pts: calcPoints(row) }))
-                       .sort((a, b) => b.pts - a.pts);
+    const scored = data.map(row => ({ row, ...calcPoints(row) }))
+                       .sort((a, b) => b.total - a.total);
+
+    // Build set of advancing 3rd-place teams from results (for 3rd-place pick scoring)
+    const advancing3rd = new Set();
+    GROUPS.forEach(g => { const r = RESULTS[g.name]; if (r && r.third) advancing3rd.add(r.third); });
+    const allGroupsHaveResults = GROUPS.every(g => RESULTS[g.name]);
 
     // ── Build picks HTML for a user ──────────────────────────────
-    const buildPicksHTML = (row) => {
-      const thirdByGroup = {};
-      for (let k = THIRD_START; k < THIRD_START + 8; k++) {
-        const t = row[k];
-        if (t && teamGroupMap[t] !== undefined) thirdByGroup[teamGroupMap[t]] = t;
-      }
+    const buildPicksHTML = (row, email, eliminated = new Set()) => {
+      const pickCls = (pick, actual) => {
+        if (!pick || !actual) return '';
+        return pick === actual ? ' correct' : ' wrong';
+      };
+      // Group boxes — 1st and 2nd only (3rd place handled separately below)
       let boxes = '';
       GROUPS.forEach((group, gi) => {
         const first  = row[PICK_OFFSET + gi*2]     || '';
         const second = row[PICK_OFFSET + gi*2 + 1] || '';
-        const third  = thirdByGroup[gi]  || '';
+        const r = RESULTS[group.name] || {};
         boxes += `<div class="lb-group-box">
           <div class="lb-group-title">${group.name}</div>
-          ${first  ? teamRowHTML(first,  'gold',   '🥇') : ''}
-          ${second ? teamRowHTML(second, 'silver', '🥈') : ''}
-          ${third  ? teamRowHTML(third,  'bronze', '🥉') : ''}
+          ${first  ? teamRowHTML(first,  'gold'  + pickCls(first,  r.first),  '🥇') : ''}
+          ${second ? teamRowHTML(second, 'silver'+ pickCls(second, r.second), '🥈') : ''}
         </div>`;
       });
-      return `<div class="lb-groups-grid">${boxes}</div>`;
+
+      // Bracket picks — compact pill chips by round
+      const bPicks = ALL_BRACKET_PICKS[email] || {};
+      const hasBracketPicks = ROUNDS_DEF.some(rd => rd.matches.some(mn => bPicks['M' + mn]));
+      let bracketHtml = '';
+      if (hasBracketPicks) {
+        bracketHtml = '<div class="lb-bracket-section"><div class="lb-bracket-title">Bracket Picks</div>';
+        ROUNDS_DEF.forEach(rd => {
+          const chips = rd.matches.filter(mn => mn !== 103).map(mn => {
+            const pick = bPicks['M' + mn];
+            if (!pick) return `<span class="bk-chip pending">—</span>`;
+            const winner = BRACKET_WINNERS[mn] || BRACKET_WINNERS[String(mn)];
+            let state;
+            if (winner) {
+              state = pick === winner ? 'correct' : 'wrong';
+            } else if (eliminated.has(pick)) {
+              state = 'impossible';
+            } else {
+              state = 'pending';
+            }
+            return `<span class="bk-chip ${state}">${pick}</span>`;
+          }).join('');
+          bracketHtml += `<div class="lb-bracket-row"><span class="lb-bracket-rd">${rd.label}</span>${chips}</div>`;
+        });
+        bracketHtml += '</div>';
+      }
+
+      // 3rd place picks — dedicated section, all 8 shown with correct/wrong/pending
+      const thirdPicks = [];
+      for (let k = THIRD_START; k < THIRD_START + 8; k++) { if (row[k]) thirdPicks.push(row[k]); }
+      let thirdHtml = '';
+      if (thirdPicks.length > 0) {
+        const chips = thirdPicks.map(team => {
+          let cls;
+          if (advancing3rd.has(team))          cls = 'correct';
+          else if (allGroupsHaveResults)        cls = 'wrong';
+          else                                  cls = 'pending';
+          return `<span class="bk-chip ${cls}">${team}</span>`;
+        }).join('');
+        thirdHtml = `<div class="lb-bracket-section"><div class="lb-bracket-title">3rd Place Picks (1 pt each if team advances)</div><div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;">${chips}</div></div>`;
+      }
+
+      return `<div class="lb-groups-grid">${boxes}</div>${thirdHtml}${bracketHtml}`;
     };
 
     // ── Render table ─────────────────────────────────────────────
@@ -1067,20 +1543,27 @@ async function loadLeaderboard() {
         <th>#</th><th>Player</th><th style="text-align:right;">Points</th><th></th>
       </tr></thead><tbody>`;
 
-    scored.forEach(({ row, pts }, i) => {
+    scored.forEach(({ row, total, groupPts, bracketPts, maxPossible, email }, i) => {
       const name = row[1] || 'Anonymous';
       const rank = i + 1;
       const uid  = `user-${i}`;
+      const hasAnyPts = groupPts > 0 || bracketPts > 0;
+      const ptsSub = hasAnyPts
+        ? `<div style="font-size:0.7rem;color:var(--muted);font-weight:400;letter-spacing:0;">group ${groupPts} · bracket ${bracketPts}</div>`
+        : '';
+      const maxSub = maxPossible > total
+        ? `<div style="font-size:0.68rem;color:#60a5fa;font-weight:400;letter-spacing:0;">max ${maxPossible}</div>`
+        : '';
       html += `
         <tr class="lb-row" onclick="toggleExpand('${uid}')">
           <td class="lb-rank ${rank <= 3 ? 'top' : ''}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</td>
           <td class="lb-uname">${name}</td>
-          <td class="lb-pts">${pts % 1 === 0 ? pts : pts.toFixed(1)}<span>pts</span></td>
+          <td class="lb-pts" style="vertical-align:middle;">${total}<span>pts</span>${ptsSub}${maxSub}</td>
           <td class="lb-chevron">▼</td>
         </tr>
         <tr class="lb-expand-row" id="${uid}">
           <td class="lb-expand-cell" colspan="4">
-            <div class="lb-expand-inner">${buildPicksHTML(row)}</div>
+            <div class="lb-expand-inner">${buildPicksHTML(row, email, eliminatedTeams)}</div>
           </td>
         </tr>`;
     });
