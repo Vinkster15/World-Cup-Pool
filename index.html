@@ -322,7 +322,7 @@
 <nav class="top-nav">
   <button class="nav-tab active" onclick="showTab('picks')">📋 My Picks</button>
   <button class="nav-tab" onclick="showTab('leaderboard')">🏆 Leaderboard</button>
-  <button class="nav-tab" onclick="showTab('rules')">📜 Rules & Payment</button>
+  <button class="nav-tab" id="nav-rules-tab" onclick="showTab('rules')">📜 Rules & Payment</button>
   <button class="nav-tab" onclick="showTab('bracket')">🗓️ Bracket Round</button>
 </nav>
 
@@ -457,7 +457,7 @@
 <!-- ===== RULES TAB ===== -->
 <div id="tab-rules" class="screen">
   <div style="max-width:700px;margin:40px auto;padding:0 16px 60px;">
-    <h2 style="font-size:1.4rem;font-weight:800;color:var(--accent2);margin-bottom:6px;">📜 Rules & Payment</h2>
+    <h2 id="rules-page-title" style="font-size:1.4rem;font-weight:800;color:var(--accent2);margin-bottom:6px;">📜 Rules & Payment</h2>
     <p style="color:var(--muted);font-size:0.85rem;margin-bottom:28px;">Everything you need to know about the pool</p>
 
     <!-- RULES SECTION (collapsible) -->
@@ -515,12 +515,11 @@
           </div>
         </div>
 
-        <p style="color:var(--muted);font-size:0.82rem;margin-top:16px;text-align:center;">Payouts will be determined by the number of entrants.</p>
       </div>
     </div>
 
     <!-- PAYMENT SECTION (collapsible) -->
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div id="payment-section" style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;">
       <button onclick="togglePayment()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:none;border:none;cursor:pointer;text-align:left;">
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:3px;height:16px;background:var(--accent);border-radius:2px;flex-shrink:0;"></div>
@@ -554,6 +553,42 @@
       </div>
     </div>
 
+    <!-- PAYOUTS SECTION (collapsible) -->
+    <div id="payouts-section" style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <button onclick="togglePayouts()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:none;border:none;cursor:pointer;text-align:left;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:3px;height:16px;background:#f5c518;border-radius:2px;flex-shrink:0;"></div>
+          <span style="font-size:0.75rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#f5c518;">Payouts</span>
+        </div>
+        <span id="payouts-chevron" style="color:var(--muted);font-size:0.85rem;transition:transform 0.2s;">▼</span>
+      </button>
+      <div id="payouts-body" style="display:none;padding:0 24px 24px;">
+        <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Prize distribution based on final standings:</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.95rem;color:var(--text);">🥇 1st Place</span>
+            <strong style="font-size:1.15rem;color:#f5c518;">$350</strong>
+          </div>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.95rem;color:var(--text);">🥈 2nd Place</span>
+            <strong style="font-size:1.15rem;color:#f5c518;">$250</strong>
+          </div>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.95rem;color:var(--text);">🥉 3rd Place</span>
+            <strong style="font-size:1.15rem;color:#f5c518;">$175</strong>
+          </div>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.95rem;color:var(--text);">4th Place</span>
+            <strong style="font-size:1.15rem;color:#f5c518;">$125</strong>
+          </div>
+          <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.95rem;color:var(--text);">5th Place</span>
+            <strong style="font-size:1.15rem;color:#f5c518;">$75</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -569,9 +604,33 @@
 <!-- ===== BRACKET TAB ===== -->
 <div id="tab-bracket" class="screen">
 
-  <!-- Leaderboard shortcut — always visible on bracket tab -->
-  <div style="text-align:center;padding:14px 16px 0;">
+  <!-- Leaderboard / Payouts shortcuts — always visible on bracket tab -->
+  <div style="text-align:center;padding:14px 16px 0;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
     <button onclick="goToLeaderboard()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--accent2);font-size:0.85rem;font-weight:700;padding:8px 20px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:0.05em;">🏆 View Leaderboard</button>
+    <button onclick="goToPayouts()" style="background:var(--card2);border:1px solid var(--border);border-radius:8px;color:#f5c518;font-size:0.85rem;font-weight:700;padding:8px 20px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:0.05em;">💰 View Payouts</button>
+  </div>
+
+  <!-- BRACKET SIGN-IN CARD: shown when bracket is live and user is not authenticated -->
+  <div id="bracket-signin-card" style="display:none;max-width:420px;margin:24px auto 0;padding:0 16px;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="font-size:1.05rem;font-weight:800;color:var(--accent2);margin-bottom:4px;">🔐 Sign In to Submit Your Bracket</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:18px;">Use the same email &amp; PIN from your group stage entry</div>
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input class="auth-input" id="bk-li-email" type="email" placeholder="you@example.com">
+      </div>
+      <div class="auth-field" style="margin-bottom:0;">
+        <label>Your 4-Digit PIN</label>
+        <div class="pin-row">
+          <input class="pin-digit" id="bk-li-p1" type="number" min="0" max="9">
+          <input class="pin-digit" id="bk-li-p2" type="number" min="0" max="9">
+          <input class="pin-digit" id="bk-li-p3" type="number" min="0" max="9">
+          <input class="pin-digit" id="bk-li-p4" type="number" min="0" max="9">
+        </div>
+      </div>
+      <div class="auth-error" id="bk-li-error" style="margin-top:8px;"></div>
+      <button class="auth-btn" id="bk-li-btn" onclick="handleBracketLogin()" style="margin-top:12px;">Sign In →</button>
+    </div>
   </div>
 
   <!-- PRE-COUNTDOWN: shown before June 28 12:00am ET -->
@@ -580,7 +639,7 @@
     <div style="text-align:center;margin-bottom:36px;">
       <div style="font-size:2.4rem;margin-bottom:12px;">🗓️</div>
       <h2 style="font-size:1.8rem;font-weight:800;color:var(--accent2);margin-bottom:8px;">Bracket Opens Soon</h2>
-      <p style="color:var(--muted);font-size:0.95rem;">Come back on <strong style="color:var(--accent2);">June 28 at midnight</strong> to fill out your bracket!</p>
+      <p style="color:var(--muted);font-size:0.95rem;">The last group stage game kicks off <strong style="color:var(--accent2);">June 27 at 10:00 PM ET</strong> — come back after that to fill out your bracket!</p>
     </div>
 
     <!-- Pre-countdown blocks -->
@@ -695,6 +754,7 @@ const isComplete = gi => picks[gi].first !== null && picks[gi].second !== null;
    While false, the bracket tab shows "coming soon" to everyone.
    ============================================= */
 const BRACKET_LIVE = false;
+const ALL_PAID = false; // flip to true once all payments received
 
 
 /* ===== BRACKET COUNTDOWN ===== */
@@ -728,15 +788,21 @@ function initBracketTab() {
   }
 
   // BRACKET_LIVE = true
+  const signinCard = document.getElementById('bracket-signin-card');
   if (now >= BRACKET_START && now < BRACKET_DEADLINE) {
     // Picks window open
     countdown.style.display = 'block';
     startBracketCountdown();
-    initBracketPicker();
+    if (currentUser) {
+      initBracketPicker();
+    } else {
+      signinCard.style.display = 'block';
+    }
   } else if (now >= BRACKET_DEADLINE) {
-    // Picks locked — show bracket read-only
+    // Picks locked — show bracket read-only, sign-in lets users see their picks
     locked.style.display = 'block';
     initBracketPicker();
+    if (!currentUser) signinCard.style.display = 'block';
   } else {
     waiting.style.display = 'block';
     startPreCountdown();
@@ -1083,6 +1149,49 @@ function goToLeaderboard() {
   loadLeaderboard();
 }
 
+/* ===== BRACKET LOGIN ===== */
+async function handleBracketLogin() {
+  const email = document.getElementById('bk-li-email').value.trim().toLowerCase();
+  const p = [1,2,3,4].map(i => document.getElementById(`bk-li-p${i}`).value).join('');
+  const pin = normalizePin(p);
+  const errEl = document.getElementById('bk-li-error');
+  const btn = document.getElementById('bk-li-btn');
+
+  errEl.textContent = '';
+  if (!email || p.length < 4 || [...p].some(c => c === '')) {
+    errEl.textContent = 'Please enter your email and all 4 PIN digits.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=login&data=${encodeURIComponent(JSON.stringify({ email, pin }))}`);
+    const data = await res.json();
+    if (data.found && !data.wrongPin) {
+      bracketLoginSuccess({ name: data.name, email, pin });
+    } else if (data.wrongPin) {
+      errEl.textContent = 'Incorrect PIN — try again.';
+    } else {
+      errEl.textContent = 'No account found for that email.';
+    }
+  } catch(e) {
+    errEl.textContent = 'Connection error — please try again.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Sign In →';
+}
+
+function bracketLoginSuccess(user) {
+  currentUser = user;
+  localStorage.setItem(LS_KEY, JSON.stringify(user));
+  document.getElementById('bracket-signin-card').style.display = 'none';
+  initBracketPicker();
+  setTimeout(() => {
+    document.getElementById('bracket-picker')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+
 /* ===== GO TO PAYMENT ===== */
 function goToPayment() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1099,6 +1208,21 @@ function goToPayment() {
   }, 100);
 }
 
+/* ===== GO TO PAYOUTS ===== */
+function goToPayouts() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-rules').classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'rules'")) b.classList.add('active');
+  });
+  document.getElementById('payouts-body').style.display = 'block';
+  document.getElementById('payouts-chevron').style.transform = 'rotate(180deg)';
+  setTimeout(() => {
+    document.getElementById('payouts-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
 /* ===== ACCORDION TOGGLES ===== */
 function togglePayment() {
   const body = document.getElementById('payment-body');
@@ -1111,6 +1235,14 @@ function togglePayment() {
 function toggleRules() {
   const body = document.getElementById('rules-body');
   const chevron = document.getElementById('rules-chevron');
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  chevron.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function togglePayouts() {
+  const body = document.getElementById('payouts-body');
+  const chevron = document.getElementById('payouts-chevron');
   const open = body.style.display === 'block';
   body.style.display = open ? 'none' : 'block';
   chevron.style.transform = open ? '' : 'rotate(180deg)';
@@ -1521,7 +1653,7 @@ async function loadLeaderboard() {
     // Build set of advancing 3rd-place teams from results (for 3rd-place pick scoring)
     const advancing3rd = new Set();
     GROUPS.forEach(g => { const r = RESULTS[g.name]; if (r && r.third) advancing3rd.add(r.third); });
-    const allGroupsHaveResults = GROUPS.every(g => RESULTS[g.name]);
+    const allGroupsHaveResults = GROUPS.every(g => { const r = RESULTS[g.name]; return r && r.first; });
 
     // ── Build picks HTML for a user ──────────────────────────────
     const buildPicksHTML = (row, email, eliminated = new Set()) => {
@@ -1806,6 +1938,14 @@ function loginSuccess(user, existingData) {
 
   renderGroups();
   applyDeadlineState();
+
+  // If bracket tab is active and sign-in card is showing (auto-login resolved after bracket init),
+  // hide the card and re-init the picker with user context
+  const bkSignIn = document.getElementById('bracket-signin-card');
+  if (bkSignIn && bkSignIn.style.display !== 'none') {
+    bkSignIn.style.display = 'none';
+    initBracketPicker();
+  }
 }
 
 function handleLogout() {
@@ -1829,6 +1969,16 @@ async function autoLogin(user) {
 /* ===== INIT ===== */
 renderGroups();
 applyDeadlineState();
+
+// ALL_PAID: hide payment section and rename tab/title when all payments are in
+if (ALL_PAID) {
+  const paymentSection = document.getElementById('payment-section');
+  if (paymentSection) paymentSection.style.display = 'none';
+  const navTab = document.getElementById('nav-rules-tab');
+  if (navTab) navTab.textContent = '📜 Rules & Payouts';
+  const pageTitle = document.getElementById('rules-page-title');
+  if (pageTitle) pageTitle.textContent = '📜 Rules & Payouts';
+}
 setupPinInputs('su');
 setupPinInputs('li');
 
