@@ -1724,9 +1724,24 @@ async function loadLeaderboard() {
         <th>#</th><th>Player</th><th style="text-align:right;">Points</th><th></th>
       </tr></thead><tbody>`;
 
+    // Build tied rank map — people with equal scores share the same rank
+    const scoreCounts = {};
+    scored.forEach(({ total }) => { scoreCounts[total] = (scoreCounts[total] || 0) + 1; });
+    const rankMap = [];
+    let trueRank = 1;
+    scored.forEach(({ total }, i) => {
+      if (i > 0 && total === scored[i - 1].total) {
+        rankMap.push(rankMap[i - 1]); // same rank as previous
+      } else {
+        trueRank = i + 1;
+        rankMap.push(trueRank);
+      }
+    });
+
     scored.forEach(({ row, total, groupPts, bracketPts, maxPossible, email }, i) => {
       const name = row[1] || 'Anonymous';
-      const rank = i + 1;
+      const rank = rankMap[i];
+      const isTied = scoreCounts[total] > 1;
       const uid  = `user-${i}`;
       const hasAnyPts = groupPts > 0 || bracketPts > 0;
       const ptsSub = hasAnyPts
@@ -1735,9 +1750,12 @@ async function loadLeaderboard() {
       const maxSub = maxPossible > total
         ? `<div style="font-size:0.68rem;color:#60a5fa;font-weight:400;letter-spacing:0;">max ${maxPossible}</div>`
         : '';
+      const rankDisplay = isTied
+        ? 'T' + rank
+        : (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank);
       html += `
         <tr class="lb-row" onclick="toggleExpand('${uid}')">
-          <td class="lb-rank ${rank <= 3 ? 'top' : ''}">${rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}</td>
+          <td class="lb-rank ${rank <= 3 ? 'top' : ''}">${rankDisplay}</td>
           <td class="lb-uname">${name}</td>
           <td class="lb-pts" style="vertical-align:middle;">${total}<span>pts</span>${ptsSub}${maxSub}</td>
           <td class="lb-chevron">▼</td>
