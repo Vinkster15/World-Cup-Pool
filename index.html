@@ -1520,11 +1520,25 @@ async function loadLeaderboard() {
   el.innerHTML = '<div class="lb-loading">Loading submissions…</div>';
 
   try {
-    // Ensure bracket data is loaded (needed for eliminated-team detection)
-    await loadBracketData();
+    // Fire all 4 requests simultaneously instead of one at a time
+    const [rows, rRows, brRows, bpRows] = await Promise.all([
+      fetch(SCRIPT_URL).then(r => r.json()).catch(() => []),
+      fetch(SCRIPT_URL + '?action=results').then(r => r.json()).catch(() => []),
+      fetch(SCRIPT_URL + '?action=bracketResults').then(r => r.json()).catch(() => []),
+      fetch(SCRIPT_URL + '?action=allBracketPicks').then(r => r.json()).catch(() => []),
+    ]);
 
-    // Fetch real submissions from sheet
-    const rows = await (await fetch(SCRIPT_URL)).json();
+    // Mark bracket data as loaded so loadBracketData() skips its own fetches
+    rRows.slice(1).forEach(row => {
+      if (row[0]) bracketGroupResults[row[0]] = {
+        first: String(row[1]||''), second: String(row[2]||''), third: String(row[3]||'')
+      };
+    });
+    brRows.slice(1).forEach(row => {
+      const m = parseInt(row[0]);
+      if (m >= 73 && m <= 104) bracketMatchMeta[m] = { thirdTeam: String(row[3]||''), winner: String(row[4]||'') };
+    });
+    bracketDataLoaded = true;
 
     if (!rows || rows.length < 2) {
       el.innerHTML = '<div class="lb-empty">No submissions yet — be the first!</div>';
@@ -1547,40 +1561,28 @@ async function loadLeaderboard() {
 
     // ── Group stage results ───────────────────────────────────────
     let RESULTS = {};
-    try {
-      const rRes = await fetch(SCRIPT_URL + '?action=results');
-      const rRows = await rRes.json();
-      rRows.slice(1).forEach(r => {
-        if (r[0]) RESULTS[r[0]] = { first: r[1]||'', second: r[2]||'', third: r[3]||'' };
-      });
-    } catch(e) {}
+    rRows.slice(1).forEach(r => {
+      if (r[0]) RESULTS[r[0]] = { first: r[1]||'', second: r[2]||'', third: r[3]||'' };
+    });
 
     // ── Bracket winners ───────────────────────────────────────────
     let BRACKET_WINNERS = {};
-    try {
-      const brRes = await fetch(SCRIPT_URL + '?action=bracketResults');
-      const brRows = await brRes.json();
-      brRows.slice(1).forEach(r => { if (r[0] && r[4]) BRACKET_WINNERS[parseInt(r[0])] = String(r[4]); });
-    } catch(e) {}
+    brRows.slice(1).forEach(r => { if (r[0] && r[4]) BRACKET_WINNERS[parseInt(r[0])] = String(r[4]); });
 
     // ── Bracket picks from sheet ──────────────────────────────────
     let ALL_BRACKET_PICKS = {};
-    try {
-      const bpRes = await fetch(SCRIPT_URL + '?action=allBracketPicks');
-      const bpRows = await bpRes.json();
-      if (bpRows && bpRows.length > 1) {
-        const bpHdrs = bpRows[0];
-        const bpEmailIdx = bpHdrs.indexOf('Email');
-        bpRows.slice(1).forEach(r => {
-          const email = String(r[bpEmailIdx] || '').toLowerCase();
-          if (email) {
-            const picks = {};
-            bpHdrs.forEach((h, j) => { picks[h] = String(r[j] || ''); });
-            ALL_BRACKET_PICKS[email] = picks;
-          }
-        });
-      }
-    } catch(e) {}
+    if (bpRows && bpRows.length > 1) {
+      const bpHdrs = bpRows[0];
+      const bpEmailIdx = bpHdrs.indexOf('Email');
+      bpRows.slice(1).forEach(r => {
+        const email = String(r[bpEmailIdx] || '').toLowerCase();
+        if (email) {
+          const picks = {};
+          bpHdrs.forEach((h, j) => { picks[h] = String(r[j] || ''); });
+          ALL_BRACKET_PICKS[email] = picks;
+        }
+      });
+    }
 
     // Col layout: [0]Timestamp [1]Name [2]Email [3]PIN [4..27]Group picks [28..35]3rd picks
     const PICK_OFFSET = 4;
