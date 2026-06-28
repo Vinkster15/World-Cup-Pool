@@ -1836,7 +1836,7 @@ async function loadLeaderboard() {
     // ── Render table ─────────────────────────────────────────────
     let html = `<table class="lb-table">
       <thead><tr>
-        <th>#</th><th>Player</th><th style="text-align:right;">Points</th><th></th>
+        <th>#</th><th>Player</th><th></th><th style="text-align:right;">Points</th><th></th>
       </tr></thead><tbody>`;
 
     // Build tied rank map — people with equal scores share the same rank
@@ -1870,15 +1870,20 @@ async function loadLeaderboard() {
       const rankDisplay = isTied
         ? 'T' + rank
         : (rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank);
+      const champPick = bracketRevealed ? (ALL_BRACKET_PICKS[email] || {})['M104'] : null;
+      const champFlagCell = champPick
+        ? `<span title="${champPick}" style="font-size:1.5rem;line-height:1;">${TEAM_FLAGS[champPick] || '🏳️'}</span>`
+        : '';
       html += `
         <tr class="lb-row" onclick="toggleExpand('${uid}')">
           <td class="lb-rank ${rank <= 3 ? 'top' : ''}">${rankDisplay}</td>
           <td class="lb-uname">${name}</td>
+          <td style="text-align:center;vertical-align:middle;padding:0 4px;white-space:nowrap;">${champFlagCell}</td>
           <td class="lb-pts" style="vertical-align:middle;">${total}<span>pts</span>${ptsSub}${maxSub}</td>
           <td class="lb-chevron">▼</td>
         </tr>
         <tr class="lb-expand-row" id="${uid}">
-          <td class="lb-expand-cell" colspan="4">
+          <td class="lb-expand-cell" colspan="5">
             <div class="lb-expand-inner">${buildPicksHTML(row, email, eliminatedTeams)}</div>
           </td>
         </tr>`;
