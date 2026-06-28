@@ -1562,7 +1562,11 @@ async function loadLeaderboard() {
     // ── Group stage results ───────────────────────────────────────
     let RESULTS = {};
     rRows.slice(1).forEach(r => {
-      if (r[0]) RESULTS[r[0]] = { first: r[1]||'', second: r[2]||'', third: r[3]||'' };
+      if (r[0]) RESULTS[String(r[0]).trim()] = {
+        first:  String(r[1]||'').trim(),
+        second: String(r[2]||'').trim(),
+        third:  String(r[3]||'').trim()
+      };
     });
 
     // ── Bracket winners ───────────────────────────────────────────
@@ -1639,7 +1643,7 @@ async function loadLeaderboard() {
         if (!r) return;
         if (r.first  && row[PICK_OFFSET + gi*2]     === r.first)  groupPts += 3;
         if (r.second && row[PICK_OFFSET + gi*2 + 1] === r.second) groupPts += 2;
-        if (r.third) { for (let k = THIRD_START; k < THIRD_START + 8; k++) { if (row[k] === r.third) groupPts += 1; } }
+        if (r.third) { for (let k = THIRD_START; k < THIRD_START + 8; k++) { if (String(row[k]||'').trim().toLowerCase() === r.third.toLowerCase()) groupPts += 1; } }
       });
       const email = String(row[2] || '').toLowerCase();
       const bracketPts = calcBracketPts(email);
@@ -1653,8 +1657,9 @@ async function loadLeaderboard() {
                        .sort((a, b) => b.total - a.total);
 
     // Build set of advancing 3rd-place teams from results (for 3rd-place pick scoring)
+    // Store lowercase for case-insensitive matching
     const advancing3rd = new Set();
-    GROUPS.forEach(g => { const r = RESULTS[g.name]; if (r && r.third) advancing3rd.add(r.third); });
+    GROUPS.forEach(g => { const r = RESULTS[g.name]; if (r && r.third) advancing3rd.add(r.third.toLowerCase()); });
     const allGroupsHaveResults = GROUPS.every(g => { const r = RESULTS[g.name]; return r && r.first; });
 
     // ── Build picks HTML for a user ──────────────────────────────
@@ -1709,7 +1714,7 @@ async function loadLeaderboard() {
       if (thirdPicks.length > 0) {
         const chips = thirdPicks.map(team => {
           let cls;
-          if (advancing3rd.has(team))          cls = 'correct';
+          if (advancing3rd.has(team.toLowerCase()))  cls = 'correct';
           else if (allGroupsHaveResults)        cls = 'wrong';
           else                                  cls = 'pending';
           return `<span class="bk-chip ${cls}">${team}</span>`;
