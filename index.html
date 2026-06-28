@@ -227,6 +227,14 @@
   .lb-bracket-section { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
   .lb-bracket-title { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
   .lb-bracket-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
+  /* Sub-dropdowns inside leaderboard expand */
+  .lb-sub-section { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+  .lb-sub-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--card2); border: none; color: var(--text); font-size: 0.82rem; font-weight: 700; cursor: pointer; text-align: left; font-family: 'Oswald', system-ui, sans-serif; letter-spacing: 0.05em; }
+  .lb-sub-header:hover { background: rgba(34,197,94,0.08); }
+  .lb-sub-chevron { font-size: 0.7rem; transition: transform 0.2s; color: var(--muted); font-family: system-ui; }
+  .lb-sub-body { padding: 12px; }
+  /* Champ bar */
+  .lb-champ-bar { display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg,rgba(245,197,24,0.12),rgba(34,197,94,0.07)); border: 1px solid rgba(245,197,24,0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
   .lb-bracket-rd { font-size: 0.65rem; font-weight: 700; color: var(--muted); min-width: 60px; flex-shrink: 0; }
   .bk-chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.68rem; margin: 2px 1px; white-space: nowrap; }
   .bk-chip.pending    { background: rgba(255,255,255,0.06); color: var(--muted); }
@@ -831,6 +839,21 @@ const ROUNDS_DEF = [
 const MATCH_PTS = {73:1,74:1,75:1,76:1,77:1,78:1,79:1,80:1,81:1,82:1,83:1,84:1,85:1,86:1,87:1,88:1,89:2,90:2,91:2,92:2,93:2,94:2,95:2,96:2,97:4,98:4,99:4,100:4,101:8,102:8,103:8,104:16};
 const TOTAL_BRACKET_PICKS = 31; // excludes M103 (auto-resolved 3rd place)
 
+const TEAM_FLAGS = {
+  'Mexico':'🇲🇽','South Africa':'🇿🇦','South Korea':'🇰🇷','Czechia':'🇨🇿',
+  'Canada':'🇨🇦','Bosnia & Herzegovina':'🇧🇦','Qatar':'🇶🇦','Switzerland':'🇨🇭',
+  'Brazil':'🇧🇷','Morocco':'🇲🇦','Haiti':'🇭🇹','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'United States':'🇺🇸','Paraguay':'🇵🇾','Australia':'🇦🇺','Turkey':'🇹🇷',
+  'Germany':'🇩🇪','Curaçao':'🇨🇼','Ivory Coast':'🇨🇮','Ecuador':'🇪🇨',
+  'Netherlands':'🇳🇱','Japan':'🇯🇵','Sweden':'🇸🇪','Tunisia':'🇹🇳',
+  'Belgium':'🇧🇪','Egypt':'🇪🇬','Iran':'🇮🇷','New Zealand':'🇳🇿',
+  'Spain':'🇪🇸','Cape Verde':'🇨🇻','Saudi Arabia':'🇸🇦','Uruguay':'🇺🇾',
+  'France':'🇫🇷','Senegal':'🇸🇳','Iraq':'🇮🇶','Norway':'🇳🇴',
+  'Argentina':'🇦🇷','Algeria':'🇩🇿','Austria':'🇦🇹','Jordan':'🇯🇴',
+  'Portugal':'🇵🇹','DR Congo':'🇨🇩','Uzbekistan':'🇺🇿','Colombia':'🇨🇴',
+  'England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Croatia':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦',
+};
+
 // Which matches feed into each R16+ match (as winners, except M103 uses losers)
 const MATCH_FEEDERS = {
   89:[74,77], 90:[73,75], 91:[76,78], 92:[79,80],
@@ -1277,6 +1300,14 @@ function togglePayouts() {
   const open = body.style.display === 'block';
   body.style.display = open ? 'none' : 'block';
   chevron.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function toggleLbSub(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.lb-sub-chevron');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
 }
 
 /* ===== TABS ===== */
@@ -1765,7 +1796,41 @@ async function loadLeaderboard() {
         }
       }
 
-      return `<div class="lb-groups-grid">${boxes}</div>${thirdHtml}${bracketHtml}`;
+      if (!bracketRevealed) {
+        return `<div class="lb-groups-grid">${boxes}</div>${thirdHtml}${bracketHtml}`;
+      }
+
+      // After 3pm: champ bar + two sub-dropdowns
+      const bPicks = ALL_BRACKET_PICKS[email] || {};
+      const champ = bPicks['M104'];
+      const champFlag = champ ? (TEAM_FLAGS[champ] || '🏳️') : null;
+      const champWinner = BRACKET_WINNERS[104] || BRACKET_WINNERS['104'];
+      let champStyle = 'color:var(--text)';
+      if (champ && champWinner) champStyle = champ === champWinner ? 'color:#4ade80;font-weight:700' : 'color:#f87171;text-decoration:line-through;opacity:0.8';
+
+      const champHtml = champ ? `<div class="lb-champ-bar">
+        <span style="font-size:0.68rem;font-weight:700;color:#f5c518;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap;">🏆 Champ</span>
+        <span style="font-size:1.5rem;line-height:1;">${champFlag}</span>
+        <span style="${champStyle};font-size:0.9rem;">${champ}</span>
+      </div>` : '';
+
+      const groupSubHtml = `<div class="lb-sub-section">
+        <button class="lb-sub-header" onclick="toggleLbSub(this)">
+          <span>📋 Group Picks</span><span class="lb-sub-chevron">▼</span>
+        </button>
+        <div class="lb-sub-body" style="display:none;">
+          <div class="lb-groups-grid">${boxes}</div>${thirdHtml}
+        </div>
+      </div>`;
+
+      const bracketSubHtml = `<div class="lb-sub-section">
+        <button class="lb-sub-header" onclick="toggleLbSub(this)">
+          <span>🏆 Bracket Picks</span><span class="lb-sub-chevron">▼</span>
+        </button>
+        <div class="lb-sub-body" style="display:none;">${bracketHtml}</div>
+      </div>`;
+
+      return `${champHtml}${groupSubHtml}${bracketSubHtml}`;
     };
 
     // ── Render table ─────────────────────────────────────────────
@@ -2067,6 +2132,25 @@ if (isPastDeadline()) {
   });
   document.getElementById('tab-bracket').classList.add('active');
   initBracketTab();
+}
+
+// After bracket deadline — hide Bracket tab, make Leaderboard the home page
+if (new Date() >= BRACKET_DEADLINE) {
+  document.querySelectorAll('.nav-tab').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'bracket'")) {
+      b.style.display = 'none';
+      b.classList.remove('active');
+    }
+  });
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-leaderboard').classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'leaderboard'")) {
+      b.classList.add('active');
+    }
+  });
+  loadLeaderboard();
 }
 
 // Auto-login from localStorage if credentials saved
