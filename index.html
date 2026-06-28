@@ -753,7 +753,7 @@ const isComplete = gi => picks[gi].first !== null && picks[gi].second !== null;
    Set to true on June 28 when ready to push bracket to all users.
    While false, the bracket tab shows "coming soon" to everyone.
    ============================================= */
-const BRACKET_LIVE = false;
+const BRACKET_LIVE = true;
 const ALL_PAID = true; // flip to true once all payments received
 
 
@@ -1009,7 +1009,7 @@ function renderBracketUI() {
     </div>`;
     html += `<div style="margin-top:10px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <span style="color:var(--muted);font-size:0.82rem;"><strong style="color:var(--accent2);">${cnt}</strong> / ${TOTAL_BRACKET_PICKS} picks made</span>
-      <button class="btn btn-primary" onclick="saveBracketPicks()" id="bk-save-btn" style="padding:9px 20px;font-size:0.83rem;">💾 Save Picks</button>
+      <button class="btn btn-primary" onclick="saveBracketPicks()" id="bk-save-btn" style="padding:9px 20px;font-size:0.83rem;">✅ Submit Picks</button>
     </div>`;
   } else if (locked) {
     html += '<div style="text-align:center;margin-top:18px;color:var(--muted);font-size:0.82rem;">🔒 Picks locked — results update here as matches are played.</div>';
@@ -1113,7 +1113,7 @@ async function saveBracketPicks() {
   } catch(e) {
     alert('Could not reach server: ' + e.message);
   }
-  if (btn) { btn.disabled = false; btn.textContent = '💾 Save Picks'; }
+  if (btn) { btn.disabled = false; btn.textContent = '✅ Submit Picks'; }
 }
 
 function startPreCountdown() {
