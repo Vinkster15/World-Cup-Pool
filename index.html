@@ -235,6 +235,17 @@
   .lb-sub-body { padding: 12px; }
   /* Champ bar */
   .lb-champ-bar { display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg,rgba(245,197,24,0.12),rgba(34,197,94,0.07)); border: 1px solid rgba(245,197,24,0.35); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+  /* Visual bracket inside leaderboard */
+  .bvh { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.07em; text-align: center; padding: 4px 2px 8px; flex-shrink: 0; }
+  .bvh span { color: var(--accent2); font-size: 0.58rem; font-weight: 400; }
+  .bvm { background: var(--card); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+  .bvt { padding: 2px 6px; font-size: 0.62rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .bvt:last-child { border-bottom: none; }
+  .bvt.tbd { color: #3a3a3a; font-style: italic; font-size: 0.58rem; }
+  .bvt.cp { background: rgba(34,197,94,0.18); color: #4ade80; font-weight: 700; }
+  .bvt.cw { background: rgba(239,68,68,0.1); color: #f87171; text-decoration: line-through; opacity: 0.8; }
+  .bvt.ci { background: rgba(239,68,68,0.05); color: #f87171; opacity: 0.45; text-decoration: line-through; }
+  .bvt.cd { background: rgba(245,197,24,0.1); color: var(--accent2); font-weight: 700; }
   .lb-bracket-rd { font-size: 0.65rem; font-weight: 700; color: var(--muted); min-width: 60px; flex-shrink: 0; }
   .bk-chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.68rem; margin: 2px 1px; white-space: nowrap; }
   .bk-chip.pending    { background: rgba(255,255,255,0.06); color: var(--muted); }
@@ -1545,6 +1556,61 @@ function goBack() {
 }
 
 
+/* ===== VISUAL BRACKET (leaderboard) ===== */
+function buildBracketVisual(bPicks, eliminated) {
+  const BH = 660; // total column height px (header + body)
+  const CW = [106, 112, 112, 112, 112]; // column widths: R32, R16, QF, SF, Final
+
+  const getTeams = mn => {
+    if (mn >= 73 && mn <= 88) return getR32Teams(mn).map(t => t || null);
+    const f = MATCH_FEEDERS[mn];
+    return f ? [bPicks['M'+f[0]]||null, bPicks['M'+f[1]]||null] : [null,null];
+  };
+
+  const trow = (team, isPick, mn) => {
+    if (!team) return `<div class="bvt tbd">TBD</div>`;
+    const w = (bracketMatchMeta[mn] && bracketMatchMeta[mn].winner) || '';
+    let c = '';
+    if (isPick) {
+      if (w) c = (team === w) ? 'cp' : 'cw';
+      else c = eliminated.has(team.toLowerCase()) ? 'ci' : 'cd';
+    }
+    const fl = TEAM_FLAGS[team] || '';
+    return `<div class="bvt${c?' '+c:''}" title="${team}">${fl ? fl+' ' : ''}${team}</div>`;
+  };
+
+  const mcard = mn => {
+    const [t1,t2] = getTeams(mn);
+    const pk = bPicks['M'+mn] || null;
+    return `<div class="bvm">${trow(t1,pk&&pk===t1,mn)}${trow(t2,pk&&pk===t2,mn)}</div>`;
+  };
+
+  // Match order chosen so space-around gives perfect bracket alignment
+  const COLS = [
+    { label:'R32',   pts:'1pt',   w:CW[0], matches:[73,75,74,77,83,84,81,82,76,78,79,80,86,88,85,87] },
+    { label:'R16',   pts:'2pts',  w:CW[1], matches:[90,89,93,94,91,92,95,96] },
+    { label:'QF',    pts:'4pts',  w:CW[2], matches:[97,98,99,100] },
+    { label:'SF',    pts:'8pts',  w:CW[3], matches:[101,102] },
+    { label:'Final', pts:'16pts', w:CW[4], matches:[104] },
+  ];
+  const totalW = CW.reduce((a,b)=>a+b,0) + 4*3;
+
+  const colsHtml = COLS.map(({label,pts,w,matches}) =>
+    `<div style="width:${w}px;height:${BH}px;flex-shrink:0;display:flex;flex-direction:column;box-sizing:border-box;">
+      <div class="bvh">${label} <span>${pts}</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;">
+        ${matches.map(mcard).join('')}
+      </div>
+    </div>`
+  ).join('');
+
+  return `<div style="overflow-x:auto;margin:0 -8px;padding:0 8px 4px;">
+    <div style="display:flex;gap:3px;min-width:${totalW}px;">
+      ${colsHtml}
+    </div>
+  </div>`;
+}
+
 /* ===== LEADERBOARD ===== */
 async function loadLeaderboard() {
   const el = document.getElementById('lb-content');
@@ -1823,11 +1889,16 @@ async function loadLeaderboard() {
         </div>
       </div>`;
 
+      const hasBracketPicks = ROUNDS_DEF.some(rd => rd.matches.some(mn => bPicks['M'+mn]));
+      const bracketVisual = hasBracketPicks
+        ? buildBracketVisual(bPicks, eliminated)
+        : `<div style="text-align:center;padding:10px 0;"><span style="font-size:0.78rem;color:var(--muted);">No bracket picks submitted</span></div>`;
+
       const bracketSubHtml = `<div class="lb-sub-section">
         <button class="lb-sub-header" onclick="toggleLbSub(this)">
           <span>🏆 Bracket Picks</span><span class="lb-sub-chevron">▼</span>
         </button>
-        <div class="lb-sub-body" style="display:none;">${bracketHtml}</div>
+        <div class="lb-sub-body" style="display:none;padding:8px;">${bracketVisual}</div>
       </div>`;
 
       return `${champHtml}${groupSubHtml}${bracketSubHtml}`;
