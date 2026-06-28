@@ -1177,7 +1177,7 @@ function goToLeaderboard() {
 /* ===== BRACKET LOGIN ===== */
 async function handleBracketLogin() {
   const email = document.getElementById('bk-li-email').value.trim().toLowerCase();
-  const pin = normalizePin(getPin('bk-li'));
+  const pin = getPin('bk-li');
   const errEl = document.getElementById('bk-li-error');
   const btn = document.getElementById('bk-li-btn');
 
