@@ -826,7 +826,7 @@ const ROUNDS_DEF = [
   { id: 'r16',   label: 'Round of 16',  pts: 2,  matches: [89,90,91,92,93,94,95,96] },
   { id: 'qf',    label: 'Quarterfinals',pts: 4,  matches: [97,98,99,100] },
   { id: 'sf',    label: 'Semifinals',   pts: 8,  matches: [101,102] },
-  { id: 'final', label: 'Final',        pts: 16, matches: [104,103] },
+  { id: 'final', label: 'Final',        pts: 16, matches: [104] },
 ];
 const MATCH_PTS = {73:1,74:1,75:1,76:1,77:1,78:1,79:1,80:1,81:1,82:1,83:1,84:1,85:1,86:1,87:1,88:1,89:2,90:2,91:2,92:2,93:2,94:2,95:2,96:2,97:4,98:4,99:4,100:4,101:8,102:8,103:8,104:16};
 const TOTAL_BRACKET_PICKS = 31; // excludes M103 (auto-resolved 3rd place)
@@ -1677,6 +1677,7 @@ async function loadLeaderboard() {
     const advancing3rd = new Set();
     GROUPS.forEach(g => { const r = RESULTS[g.name]; if (r && r.third) advancing3rd.add(r.third.toLowerCase()); });
     const allGroupsHaveResults = GROUPS.every(g => { const r = RESULTS[g.name]; return r && r.first; });
+    const bracketRevealed = new Date() >= BRACKET_DEADLINE;
 
     // ── Build picks HTML for a user ──────────────────────────────
     const buildPicksHTML = (row, email, eliminated = new Set()) => {
@@ -1684,7 +1685,8 @@ async function loadLeaderboard() {
         if (!pick || !actual) return '';
         return pick === actual ? ' correct' : ' wrong';
       };
-      // Group boxes — 1st and 2nd only (3rd place handled separately below)
+
+      // Group boxes — 1st and 2nd only
       let boxes = '';
       GROUPS.forEach((group, gi) => {
         const first  = row[PICK_OFFSET + gi*2]     || '';
@@ -1697,33 +1699,7 @@ async function loadLeaderboard() {
         </div>`;
       });
 
-      // Bracket picks — compact pill chips by round
-      const bPicks = ALL_BRACKET_PICKS[email] || {};
-      const hasBracketPicks = ROUNDS_DEF.some(rd => rd.matches.some(mn => bPicks['M' + mn]));
-      let bracketHtml = '';
-      if (hasBracketPicks) {
-        bracketHtml = '<div class="lb-bracket-section"><div class="lb-bracket-title">Bracket Picks</div>';
-        ROUNDS_DEF.forEach(rd => {
-          const chips = rd.matches.filter(mn => mn !== 103).map(mn => {
-            const pick = bPicks['M' + mn];
-            if (!pick) return `<span class="bk-chip pending">—</span>`;
-            const winner = BRACKET_WINNERS[mn] || BRACKET_WINNERS[String(mn)];
-            let state;
-            if (winner) {
-              state = pick === winner ? 'correct' : 'wrong';
-            } else if (eliminated.has(pick)) {
-              state = 'impossible';
-            } else {
-              state = 'pending';
-            }
-            return `<span class="bk-chip ${state}">${pick}</span>`;
-          }).join('');
-          bracketHtml += `<div class="lb-bracket-row"><span class="lb-bracket-rd">${rd.label}</span>${chips}</div>`;
-        });
-        bracketHtml += '</div>';
-      }
-
-      // 3rd place picks — dedicated section, all 8 shown with correct/wrong/pending
+      // 3rd place picks
       const thirdPicks = [];
       for (let k = THIRD_START; k < THIRD_START + 8; k++) { if (row[k]) thirdPicks.push(row[k]); }
       let thirdHtml = '';
@@ -1731,11 +1707,47 @@ async function loadLeaderboard() {
         const chips = thirdPicks.map(team => {
           let cls;
           if (advancing3rd.has(team.toLowerCase()))  cls = 'correct';
-          else if (allGroupsHaveResults)        cls = 'wrong';
-          else                                  cls = 'pending';
+          else if (allGroupsHaveResults)             cls = 'wrong';
+          else                                       cls = 'pending';
           return `<span class="bk-chip ${cls}">${team}</span>`;
         }).join('');
-        thirdHtml = `<div class="lb-bracket-section"><div class="lb-bracket-title">3rd Place Picks (1 pt each if team advances)</div><div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;">${chips}</div></div>`;
+        thirdHtml = `<div class="lb-bracket-section"><div class="lb-bracket-title">3rd Place Picks (1 pt each)</div><div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;">${chips}</div></div>`;
+      }
+
+      // Bracket picks — only shown after 3pm ET deadline
+      let bracketHtml = '';
+      if (!bracketRevealed) {
+        bracketHtml = `<div class="lb-bracket-section" style="text-align:center;padding:10px 0;">
+          <span style="font-size:0.78rem;color:var(--muted);">🏆 Bracket picks reveal at <strong style="color:var(--accent2);">3:00 PM ET</strong> today</span>
+        </div>`;
+      } else {
+        const bPicks = ALL_BRACKET_PICKS[email] || {};
+        const hasBracketPicks = ROUNDS_DEF.some(rd => rd.matches.some(mn => bPicks['M' + mn]));
+        if (hasBracketPicks) {
+          bracketHtml = '<div class="lb-bracket-section"><div class="lb-bracket-title">Bracket Picks</div>';
+          ROUNDS_DEF.forEach(rd => {
+            const chips = rd.matches.filter(mn => mn !== 103).map(mn => {
+              const pick = bPicks['M' + mn];
+              if (!pick) return `<span class="bk-chip pending">—</span>`;
+              const winner = BRACKET_WINNERS[mn] || BRACKET_WINNERS[String(mn)];
+              let state;
+              if (winner) {
+                state = pick === winner ? 'correct' : 'wrong';
+              } else if (eliminated.has(pick)) {
+                state = 'impossible';
+              } else {
+                state = 'pending';
+              }
+              return `<span class="bk-chip ${state}">${pick}</span>`;
+            }).join('');
+            bracketHtml += `<div class="lb-bracket-row"><span class="lb-bracket-rd">${rd.label}</span>${chips}</div>`;
+          });
+          bracketHtml += '</div>';
+        } else {
+          bracketHtml = `<div class="lb-bracket-section" style="text-align:center;padding:10px 0;">
+            <span style="font-size:0.78rem;color:var(--muted);">No bracket picks submitted</span>
+          </div>`;
+        }
       }
 
       return `<div class="lb-groups-grid">${boxes}</div>${thirdHtml}${bracketHtml}`;
@@ -1768,7 +1780,9 @@ async function loadLeaderboard() {
       const uid  = `user-${i}`;
       const hasAnyPts = groupPts > 0 || bracketPts > 0;
       const ptsSub = hasAnyPts
-        ? `<div style="font-size:0.7rem;color:var(--muted);font-weight:400;letter-spacing:0;">group ${groupPts} · bracket ${bracketPts}</div>`
+        ? bracketRevealed
+          ? `<div style="font-size:0.7rem;color:var(--muted);font-weight:400;letter-spacing:0;">group ${groupPts} · bracket ${bracketPts}</div>`
+          : `<div style="font-size:0.7rem;color:var(--muted);font-weight:400;letter-spacing:0;">group ${groupPts}</div>`
         : '';
       const maxSub = maxPossible > total
         ? `<div style="font-size:0.68rem;color:#60a5fa;font-weight:400;letter-spacing:0;">max ${maxPossible}</div>`
