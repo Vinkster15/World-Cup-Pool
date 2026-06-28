@@ -845,6 +845,7 @@ const MATCH_FEEDERS = {
 let bracketGroupResults = {}; // { 'Group A': { first, second, third }, ... }
 let bracketMatchMeta    = {}; // { 73: { thirdTeam, winner }, ... }
 let bracketUserPicks    = {}; // { M73: 'Brazil', M74: 'Germany', ... }
+let bracketTiebreaker   = ''; // total goals in bracket round
 let bracketActiveRound  = 'r32';
 let bracketDataLoaded   = false;
 
@@ -937,6 +938,7 @@ async function loadUserBracketPicks() {
         const v = data.picks['M' + m];
         if (v) bracketUserPicks['M' + m] = v;
       }
+      if (data.picks['Tiebreaker']) bracketTiebreaker = data.picks['Tiebreaker'];
     }
   } catch(e) {}
 }
@@ -998,9 +1000,16 @@ function renderBracketUI() {
   // Save bar / status
   if (!locked && currentUser) {
     const cnt = countBracketPicks();
-    html += `<div style="margin-top:18px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    html += `<div style="margin-top:18px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+      <div style="font-size:0.82rem;font-weight:700;color:#f5c518;margin-bottom:4px;">🎯 Tiebreaker</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;">How many total goals will be scored in the entire bracket round (Round of 32 through the Final)?</div>
+      <input type="number" id="bk-tiebreaker" min="0" max="500" placeholder="Enter total goals..."
+        style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.9rem;outline:none;-moz-appearance:textfield;"
+        value="${bracketTiebreaker}" oninput="bracketTiebreaker=this.value">
+    </div>`;
+    html += `<div style="margin-top:10px;background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <span style="color:var(--muted);font-size:0.82rem;"><strong style="color:var(--accent2);">${cnt}</strong> / ${TOTAL_BRACKET_PICKS} picks made</span>
-      <button class="btn btn-primary" onclick="saveBracketPicks()" id="bk-save-btn" style="padding:9px 20px;font-size:0.83rem;">Save Picks</button>
+      <button class="btn btn-primary" onclick="saveBracketPicks()" id="bk-save-btn" style="padding:9px 20px;font-size:0.83rem;">💾 Save Picks</button>
     </div>`;
   } else if (locked) {
     html += '<div style="text-align:center;margin-top:18px;color:var(--muted);font-size:0.82rem;">🔒 Picks locked — results update here as matches are played.</div>';
@@ -1083,10 +1092,17 @@ function switchBracketRound(roundId) {
 
 async function saveBracketPicks() {
   if (!currentUser) { alert('Please log in to save your picks.'); return; }
+  const tbInput = document.getElementById('bk-tiebreaker');
+  if (tbInput) bracketTiebreaker = tbInput.value;
+  if (!bracketTiebreaker || String(bracketTiebreaker).trim() === '') {
+    alert('Please enter your tiebreaker — total goals scored in the bracket round.');
+    if (tbInput) tbInput.focus();
+    return;
+  }
   const btn = document.getElementById('bk-save-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
-    const payload = { email: currentUser.email, pin: currentUser.pin, picks: bracketUserPicks };
+    const payload = { email: currentUser.email, pin: currentUser.pin, picks: bracketUserPicks, tiebreaker: bracketTiebreaker };
     const url = SCRIPT_URL + '?action=saveBracket&data=' + encodeURIComponent(JSON.stringify(payload));
     const data = await (await fetch(url)).json();
     if (data.success) {
